@@ -1,52 +1,48 @@
+@vite(['resources/css/app.css', 'resources/css/register.css'])
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+      <div class="logo-wrapper">
+            <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo">
+        </div>
+
+        <div class="mb-8 text-center">
+            <h2 class="register-title">Create Account</h2>
+            <p class="register-subtitle">ParkMaster</p>
+        </div>
+
+    <form method="POST" action="{{ route('register') }}" class="space-y-6">
         @csrf
 
-        <!-- Name -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+            <x-input-label for="name" :value="__('Full Name')" class="form-label" />
+            <x-text-input id="name" class="vms-input" type="text" name="name" :value="old('name')" required autofocus placeholder="Enter your full name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+        <div>
+            <x-input-label for="email" :value="__('Email Address')" class="form-label" />
+            <x-text-input id="email" class="vms-input" type="email" name="email" :value="old('email')" required placeholder="email@example.com" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <x-input-label for="password" :value="__('Password')" class="form-label" />
+                <x-text-input id="password" class="vms-input" type="password" name="password" required placeholder="" />
+            </div>
+            <div>
+                <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="form-label" />
+                <x-text-input id="password_confirmation" class="vms-input" type="password" name="password_confirmation" required placeholder="" />
+            </div>
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <div class="flex flex-col items-center space-y-4 pt-4">
+            <button type="submit" class="vms-btn-primary">
+                {{ __('Create Account') }}
+            </button>
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+            <a class="login-link" href="{{ route('login') }}">
+                {{ __('Already have an account? Sign in') }}
             </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
         </div>
     </form>
 </x-guest-layout>
