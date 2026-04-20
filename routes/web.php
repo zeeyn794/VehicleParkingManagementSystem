@@ -8,8 +8,17 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('user.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
+    Route::view('/dashboard', 'user.dashboard')->name('dashboard');
+    Route::view('/parking', 'user.parking')->name('parking');
+    Route::view('/session', 'user.session')->name('session');
+    Route::view('/vehicles', 'user.vehicles')->name('vehicles');
+    Route::view('/history', 'user.history')->name('history');
+    Route::view('/payments', 'user.payments')->name('payments');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -18,3 +27,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
