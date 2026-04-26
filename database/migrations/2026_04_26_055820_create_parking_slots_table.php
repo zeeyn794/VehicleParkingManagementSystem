@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('parking_slots', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        $table->id();
+        $table->string('slot_number');
+        $table->string('slot_code')->nullable(); 
+        $table->string('status')->default('available');
+        $table->string('type')->nullable();
+        $table->decimal('hourly_rate', 8, 2)->default(50.00);
+        $table->timestamps();
         });
     }
 
