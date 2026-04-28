@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\User\DashboardController;
+use App\Http\Controllers\User\ModernDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Models\ParkingLog;
 use App\Models\ParkingSlot;
@@ -11,34 +12,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    if (Auth::user()->role === 'admin') {
-        return view('admin.dashboard', [
-            'totalSlots' => 50,
-            'availableSlots' => 38,
-            'occupancyRate' => 24,
-            'slots' => [] 
-        ]);
-    }
-
-    $user = Auth::user();
-    $activeSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
-        ->where('exit_time', '>', now())
-        ->with('parkingSlot')
-        ->get() : collect();
-    $userVehicles = $user->vehicles()->latest()->get();
-    $availableSlots = ParkingSlot::where('status', 'available')->get();
-
-    return view('dashboard', compact('activeSessions', 'userVehicles', 'availableSlots'));
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::post('/dashboard/park', function () {
-    // TODO: handle parking logic
-    return redirect()->route('dashboard')->with('success', 'Parking booked successfully!');
-})->middleware(['auth', 'verified'])->name('dashboard.park');
+Route::get('/dashboard', [ModernDashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
-    Route::view('/dashboard', 'user.dashboard')->name('dashboard');
+    Route::get('/dashboard', [ModernDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/book', [ModernDashboardController::class, 'bookParking'])->name('book');
+    Route::post('/extend', [ModernDashboardController::class, 'extendParking'])->name('extend');
+    Route::post('/end', [ModernDashboardController::class, 'endParking'])->name('end');
+    Route::get('/slots', [ModernDashboardController::class, 'getParkingSlots'])->name('slots');
+    Route::get('/history', [ModernDashboardController::class, 'getParkingHistory'])->name('history');
+    Route::post('/vehicles', [ModernDashboardController::class, 'addVehicle'])->name('vehicles.add');
+    Route::post('/payments', [ModernDashboardController::class, 'addPaymentMethod'])->name('payments.add');
     Route::view('/parking', 'user.parking')->name('parking');
     Route::view('/session', 'user.session')->name('session');
     Route::view('/vehicles', 'user.vehicles')->name('vehicles');

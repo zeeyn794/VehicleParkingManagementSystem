@@ -16,35 +16,23 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // --- Data for your Dashboard Design ---
-        $parkingSlots  = ParkingSlot::orderBy('slot_code')->get();
-        $availableCount = $parkingSlots->where('status', 'available')->count();
-        $totalSlots     = $parkingSlots->count();
-
-        // This matches the variable your dashboard was screaming about
+        // Get active parking sessions for this user
         $activeSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->where('exit_time', '>', now())
             ->with('parkingSlot')
             ->get() : collect();
 
-        $vehicles = $user->vehicles()->latest()->get();
+        // Get user's vehicles
+        $userVehicles = $user ? $user->vehicles()->latest()->get() : collect();
 
-        // Greeting based on time
-        $hour = now()->hour;
-        $greeting = match(true) {
-            $hour < 12 => 'morning',
-            $hour < 18 => 'afternoon',
-            default    => 'evening',
-        };
+        // Get available parking slots
+        $availableSlots = ParkingSlot::where('status', 'available')->get();
 
-        // Return the dashboard INSIDE the user folder
-        return view('user.dashboard', compact(
-            'parkingSlots',
-            'availableCount',
-            'totalSlots',
+        // Return the main dashboard view
+        return view('dashboard', compact(
             'activeSessions',
-            'vehicles',
-            'greeting'
+            'userVehicles',
+            'availableSlots'
         ));
     }
 
@@ -56,6 +44,7 @@ class DashboardController extends Controller
             'vehicle_id' => 'required|exists:vehicles,id',
             'duration_hours' => 'required|integer|min:1|max:24',
             'terms' => 'required|accepted',
+            'payment_method' => 'required|string|in:card,wallet,upi',
         ]);
 
         $slot = ParkingSlot::findOrFail($request->slot_id);
@@ -83,6 +72,6 @@ class DashboardController extends Controller
 
         $slot->update(['status' => 'occupied']);
 
-        return back()->with('success', "Vehicle parked successfully!");
+        return back()->with('success', "Vehicle parked successfully at {$slot->slot_number}!");
     }
 }
