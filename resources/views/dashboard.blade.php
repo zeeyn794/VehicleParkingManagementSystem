@@ -105,8 +105,7 @@
                 @endif
             </div>
 
-            <!-- Parking Modal -->
-            <div id="parkingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div id="parkingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center p-4">
                 <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] dark:text-[#EDEDEC] rounded-lg max-w-2xl w-full max-h-[70vh] shadow-2xl border border-[#19140035] dark:border-[#3E3E3A] overflow-hidden flex flex-col">
                     <div class="flex justify-between items-center p-4 border-b border-[#19140035] dark:border-[#3E3E3A]">
                         <div>
@@ -251,10 +250,10 @@
     </main>
 
     <!-- Post-Checkout Modal -->
-    <div id="checkoutModal" class="hidden fixed inset-0 bg-black/70 dark:bg-black/85 z-50 flex items-center justify-center p-4">
-        <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] rounded-3xl w-full max-w-2xl max-h-[95vh] overflow-hidden shadow-2xl border border-[#19140035]/30 dark:border-[#3E3E3A]/30">
+    <div id="checkoutModal" class="hidden fixed inset-0 bg-black/70 dark:bg-black/85 z-50 items-center justify-center p-4">
+        <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] rounded-3xl w-full max-w-2xl max-h-[95vh] overflow-hidden shadow-2xl border border-[#19140035]/30 dark:border-[#3E3E3A]/30 flex flex-col h-full">
             <!-- Header with Progress -->
-            <div class="bg-gradient-to-r from-[#f53003] to-[#e02a02] p-6 text-white relative overflow-hidden">
+            <div class="flex-shrink-0 bg-gradient-to-r from-[#f53003] to-[#e02a02] p-6 text-white relative overflow-hidden">
                 <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
                 <div class="relative z-10">
                     <div class="flex justify-between items-center mb-4">
@@ -275,8 +274,9 @@
             </div>
 
             <!-- Content Grid -->
-            <div class="p-8">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Left Column: Booking Summary -->
                     <div class="space-y-6">
                         <div class="bg-gradient-to-br from-white/80 to-white/60 dark:from-black/80 dark:to-black/60 rounded-2xl p-6 border border-[#19140035]/20 dark:border-[#3E3E3A]/20 shadow-lg">
@@ -393,97 +393,9 @@
                     </div>
                 </div>
             </div>
-                <!-- Booking Summary -->
-                <div>
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-6 h-6 bg-[#f53003] rounded-full flex items-center justify-center">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg md:text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">Booking Summary</h3>
-                    </div>
-                    <div class="bg-gradient-to-br from-white/80 to-white/60 dark:from-black/80 dark:to-black/60 backdrop-blur-sm rounded-2xl p-8 border border-[#19140035]/20 dark:border-[#3E3E3A]/20 shadow-lg space-y-6">
-                        <div class="flex justify-between items-center py-2">
-                            <span class="text-sm md:text-base text-[#706f6c] dark:text-[#A1A09A] font-medium">Parking Slot</span>
-                            <span id="checkout-slot" class="text-sm md:text-base font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">—</span>
-                        </div>
-                        <div class="flex justify-between items-center py-2">
-                            <span class="text-sm md:text-base text-[#706f6c] dark:text-[#A1A09A] font-medium">Duration</span>
-                            <span id="checkout-duration" class="text-sm md:text-base font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">—</span>
-                        </div>
-                        <div class="flex justify-between items-center py-2">
-                            <span class="text-sm md:text-base text-[#706f6c] dark:text-[#A1A09A] font-medium">Vehicle</span>
-                            <span id="checkout-vehicle" class="text-sm md:text-base font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">—</span>
-                        </div>
-                        <div class="border-t border-[#19140035]/20 dark:border-[#3E3E3A]/20 my-4"></div>
-                        <div class="flex justify-between items-center py-2">
-                            <span class="text-base md:text-lg font-bold text-[#1b1b18] dark:text-[#EDEDEC]">Total Fee</span>
-                            <span id="checkout-total" class="text-lg md:text-xl font-bold text-[#f53003]">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Method -->
-                <div>
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-6 h-6 bg-[#f53003] rounded-full flex items-center justify-center">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg md:text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">Payment Method</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <label class="flex items-center p-5 border-2 border-[#19140035]/20 dark:border-[#3E3E3A]/20 rounded-xl cursor-pointer hover:border-[#f53003]/50 hover:bg-[#f53003]/5 transition-all duration-200 group">
-                            <input type="radio" name="payment_method" value="card" checked class="mr-4 accent-[#f53003]">
-                            <div class="flex items-center gap-3 flex-1">
-                                <div class="w-10 h-10 bg-gradient-to-br from-[#f53003] to-[#d42a02] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                    </svg>
-                                </div>
-                                <span class="text-base md:text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC]">Credit/Debit Card</span>
-                            </div>
-                        </label>
-                        <label class="flex items-center p-5 border-2 border-[#19140035]/20 dark:border-[#3E3E3A]/20 rounded-xl cursor-pointer hover:border-[#f53003]/50 hover:bg-[#f53003]/5 transition-all duration-200 group">
-                            <input type="radio" name="payment_method" value="wallet" class="mr-4 accent-[#f53003]">
-                            <div class="flex items-center gap-3 flex-1">
-                                <div class="w-10 h-10 bg-gradient-to-br from-[#f53003] to-[#d42a02] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <span class="text-base md:text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC]">Digital Wallet</span>
-                            </div>
-                        </label>
-                        <label class="flex items-center p-5 border-2 border-[#19140035]/20 dark:border-[#3E3E3A]/20 rounded-xl cursor-pointer hover:border-[#f53003]/50 hover:bg-[#f53003]/5 transition-all duration-200 group">
-                            <input type="radio" name="payment_method" value="upi" class="mr-4 accent-[#f53003]">
-                            <div class="flex items-center gap-3 flex-1">
-                                <div class="w-10 h-10 bg-gradient-to-br from-[#f53003] to-[#d42a02] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                    </svg>
-                                </div>
-                                <span class="text-base md:text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC]">UPI/Bank Transfer</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Terms -->
-                <div>
-                    <div class="flex items-start p-6 bg-gradient-to-r from-white/60 to-white/40 dark:from-black/60 dark:to-black/40 backdrop-blur-sm rounded-xl border border-[#19140035]/20 dark:border-[#3E3E3A]/20 shadow-sm">
-                        <input type="checkbox" id="checkout_terms" class="mt-1 mr-4 w-4 h-4 accent-[#f53003] flex-shrink-0" required>
-                        <label for="checkout_terms" class="text-sm md:text-base text-[#706f6c] dark:text-[#A1A09A] leading-6 cursor-pointer">
-                            I acknowledge the parking charges and agree to the <span class="text-[#f53003] font-medium hover:underline">terms and conditions</span>. Payment will be processed immediately and is non-refundable.
-                        </label>
-                    </div>
-                </div>
-            </div>
 
             <!-- Footer -->
-            <div class="border-t border-[#19140035]/10 dark:border-[#3E3E3A]/10 p-6 bg-gradient-to-r from-[#FDFDFC] to-[#F8F8F6] dark:from-[#0a0a0a] dark:to-[#1a1a18] rounded-b-2xl">
+            <div class="flex-shrink-0 border-t border-[#19140035]/10 dark:border-[#3E3E3A]/10 p-6 bg-gradient-to-r from-[#FDFDFC] to-[#F8F8F6] dark:from-[#0a0a0a] dark:to-[#1a1a18] rounded-b-2xl">
                 <div class="flex gap-4">
                     <button type="button" onclick="closeCheckoutModal()"
                             class="flex-1 px-6 py-4 border-2 border-[#19140035]/30 dark:border-[#3E3E3A]/30 rounded-xl text-[#1b1b18] dark:text-[#EDEDEC] hover:bg-[#19140035]/10 dark:hover:bg-[#3E3E3A]/10 hover:border-[#19140035]/50 dark:hover:border-[#3E3E3A]/50 transition-all duration-200 text-sm md:text-base font-semibold">
@@ -510,11 +422,13 @@
 
         function openParkingModal() {
             document.getElementById('parkingModal').classList.remove('hidden');
+            document.getElementById('parkingModal').classList.add('flex');
             updateOrderSummary();
         }
 
         function closeParkingModal() {
             document.getElementById('parkingModal').classList.add('hidden');
+            document.getElementById('parkingModal').classList.remove('flex');
             // Reset form
             document.getElementById('parkingForm').reset();
             selectedSlot = null;
@@ -555,10 +469,12 @@
             document.getElementById('checkout-total').textContent = `$${total}`;
 
             document.getElementById('checkoutModal').classList.remove('hidden');
+            document.getElementById('checkoutModal').classList.add('flex');
         }
 
         function closeCheckoutModal() {
             document.getElementById('checkoutModal').classList.add('hidden');
+            document.getElementById('checkoutModal').classList.remove('flex');
         }
 
         function submitCheckout() {
