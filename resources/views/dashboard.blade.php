@@ -106,8 +106,8 @@
             </div>
 
             <div id="parkingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center p-4">
-                <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] dark:text-[#EDEDEC] rounded-lg max-w-2xl w-full max-h-[70vh] shadow-2xl border border-[#19140035] dark:border-[#3E3E3A] overflow-hidden flex flex-col">
-                    <div class="flex justify-between items-center p-4 border-b border-[#19140035] dark:border-[#3E3E3A]">
+                <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] dark:text-[#EDEDEC] rounded-lg max-w-2xl w-full h-[85vh] shadow-2xl border border-[#19140035] dark:border-[#3E3E3A] overflow-hidden flex flex-col">
+                    <div class="flex-shrink-0 flex justify-between items-center p-4 border-b border-[#19140035] dark:border-[#3E3E3A]">
                         <div>
                             <h3 class="text-xl font-bold text-[#1b1b18] dark:text-[#EDEDEC]">Parking Checkout</h3>
                             <p class="text-sm md:text-base text-[#706f6c] dark:text-[#A1A09A] mt-2">Review your selection and confirm payment to start parking.</p>
@@ -119,11 +119,11 @@
                         </button>
                     </div>
 
-                    <div class="flex-1 overflow-hidden">
-                        <form id="parkingForm" method="POST" action="{{ route('dashboard.park') }}" class="h-full flex flex-col">
+                    <div class="flex-1 overflow-hidden flex flex-col">
+                        <form id="parkingForm" method="POST" action="{{ route('dashboard.park') }}" class="flex-1 flex flex-col">
                             @csrf
 
-                            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+                            <div class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent p-4 space-y-5">
                                 <!-- Step 1: Slot Selection -->
                                 <div class="mb-4">
                                     <h4 class="text-base md:text-lg font-semibold mb-3 flex items-center text-[#1b1b18] dark:text-[#EDEDEC]">
@@ -226,23 +226,22 @@
                                 </div>
                                 @endif
                             </div>
-
-                            @if($availableSlots->isNotEmpty())
-                            <div class="border-t border-[#19140035] dark:border-[#3E3E3A] p-4 bg-[#FDFDFC] dark:bg-[#0a0a0a]">
-                                <div class="flex gap-3">
-                                    <button type="button" onclick="closeParkingModal()"
-                                            class="flex-1 px-4 py-3 border border-[#19140035] dark:border-[#3E3E3A] rounded text-[#1b1b18] dark:text-[#EDEDEC] hover:bg-[#f53003] hover:text-white hover:border-[#f53003] transition-colors text-sm md:text-base">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" id="confirmBtn"
-                                            class="flex-1 px-4 py-3 bg-[#f53003] text-white rounded hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
-                                        Confirm & Pay $0.00
-                                    </button>
-                                </div>
-
-                            </div>
-                            @endif
                         </form>
+
+                        @if($availableSlots->isNotEmpty())
+                        <div class="flex-shrink-0 border-t border-[#19140035] dark:border-[#3E3E3A] p-4 bg-[#FDFDFC] dark:bg-[#0a0a0a]">
+                            <div class="flex gap-3">
+                                <button type="button" onclick="closeParkingModal()"
+                                        class="flex-1 px-4 py-3 border border-[#19140035] dark:border-[#3E3E3A] rounded text-[#1b1b18] dark:text-[#EDEDEC] hover:bg-[#f53003] hover:text-white hover:border-[#f53003] transition-colors text-sm md:text-base">
+                                    Cancel
+                                </button>
+                                <button type="submit" form="parkingForm" id="confirmBtn"
+                                        class="flex-1 px-4 py-3 bg-[#f53003] text-white rounded hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
+                                    Confirm & Pay $0.00
+                                </button>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -251,7 +250,7 @@
 
     <!-- Post-Checkout Modal -->
     <div id="checkoutModal" class="hidden fixed inset-0 bg-black/70 dark:bg-black/85 z-50 items-center justify-center p-4">
-        <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] rounded-3xl w-full max-w-2xl max-h-[95vh] overflow-hidden shadow-2xl border border-[#19140035]/30 dark:border-[#3E3E3A]/30 flex flex-col h-full">
+        <div class="bg-[#FDFDFC] dark:bg-[#0a0a0a] rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl border border-[#19140035]/30 dark:border-[#3E3E3A]/30 flex flex-col h-full">
             <!-- Header with Progress -->
             <div class="flex-shrink-0 bg-gradient-to-r from-[#f53003] to-[#e02a02] p-6 text-white relative overflow-hidden">
                 <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
@@ -274,7 +273,7 @@
             </div>
 
             <!-- Content Grid -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                 <div class="p-8">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Left Column: Booking Summary -->
