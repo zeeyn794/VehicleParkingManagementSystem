@@ -15,18 +15,14 @@ class ModernDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Get active parking sessions for this user
         $activeSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->where('exit_time', '>', now())
             ->with('parkingSlot', 'vehicle')
             ->get() : collect();
 
-        // Get user's vehicles
         $userVehicles = $user ? $user->vehicles()->latest()->get() : collect();
 
-        // Get ALL parking slots with real-time occupancy status
         $allParkingSlots = ParkingSlot::all()->map(function($slot) {
-            // Check if slot has an active session (exit_time in future means active)
             $activeLog = ParkingLog::where('parking_slot_id', $slot->id)
                 ->where('exit_time', '>', now())
                 ->with('vehicle')
@@ -45,20 +41,16 @@ class ModernDashboardController extends Controller
             return $slot;
         });
 
-        // Get available slots for booking
         $availableSlots = $allParkingSlots->where('status', 'available');
 
-        // Get parking history - initially empty, will be loaded via search
         $parkingHistory = collect();
 
-        // Calculate user stats
         $totalSpent = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->sum('total_fee') : 0;
 
         $totalSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->count() : 0;
 
-        // Return the dashboard view
         return view('dashboard', compact(
             'user',
             'activeSessions',
@@ -132,7 +124,6 @@ class ModernDashboardController extends Controller
         $session = ParkingLog::findOrFail($request->session_id);
         $user = auth()->user();
 
-        // Verify this session belongs to the user
         if (!$user->vehicles->pluck('id')->contains($session->vehicle_id)) {
             return response()->json([
                 'success' => false,
@@ -144,7 +135,6 @@ class ModernDashboardController extends Controller
         $slot = $session->parkingSlot;
         $additionalFee = $slot->hourly_rate * $additionalHours;
 
-        // Extend the exit time
         $session->exit_time = $session->exit_time->addHours($additionalHours);
         $session->total_fee += $additionalFee;
         $session->save();
@@ -167,7 +157,6 @@ class ModernDashboardController extends Controller
         $session = ParkingLog::findOrFail($request->session_id);
         $user = auth()->user();
 
-        // Verify this session belongs to the user
         if (!$user->vehicles->pluck('id')->contains($session->vehicle_id)) {
             return response()->json([
                 'success' => false,
@@ -175,17 +164,14 @@ class ModernDashboardController extends Controller
             ], 403);
         }
 
-        // Calculate actual fee based on current time
         $actualDuration = now()->diffInMinutes($session->entry_time);
         $actualHours = ceil($actualDuration / 60);
         $actualFee = $session->parkingSlot->hourly_rate * $actualHours;
 
-        // Update session
         $session->exit_time = now();
         $session->total_fee = $actualFee;
         $session->save();
 
-        // Free up the slot
         $session->parkingSlot->update(['status' => 'available']);
 
         return response()->json([
@@ -222,7 +208,6 @@ class ModernDashboardController extends Controller
         $query = ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->with('parkingSlot', 'vehicle');
 
-        // Apply date filter
         if ($request->has('filter')) {
             switch ($request->filter) {
                 case 'today':
@@ -237,7 +222,6 @@ class ModernDashboardController extends Controller
             }
         }
 
-        // Apply search
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -306,8 +290,6 @@ class ModernDashboardController extends Controller
         $user = auth()->user();
         $paymentData = json_decode($request->payment_data, true);
 
-        // In a real app, you would save this to a payment_methods table
-        // For now, we'll just return success since this is a demo
 
         return response()->json([
             'success' => true,

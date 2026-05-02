@@ -36,5 +36,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/occupancy', [\App\Http\Controllers\Admin\DashboardController::class, 'occupancy'])->name('occupancy');
+    Route::get('/slots', [\App\Http\Controllers\Admin\DashboardController::class, 'slots'])->name('slots');
+    Route::get('/logs', [\App\Http\Controllers\Admin\DashboardController::class, 'logs'])->name('logs');
+    Route::get('/users', [\App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users');
+    Route::post('/slots', [\App\Http\Controllers\Admin\DashboardController::class, 'storeSlot'])->name('slots.store');
+    Route::delete('/slots/{id}', [\App\Http\Controllers\Admin\DashboardController::class, 'destroySlot'])->name('slots.destroy');
+    Route::delete('/users/{id}', [\App\Http\Controllers\Admin\DashboardController::class, 'destroyUser'])->name('users.destroy');
+});
+
 require __DIR__.'/auth.php';
 

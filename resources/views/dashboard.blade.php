@@ -1037,34 +1037,57 @@
                 </div>
             </div>
             <nav class="nav-menu">
-                <a href="#" class="nav-item active" data-page="dashboard">
-                    <i class="fas fa-home"></i>
-                    <span class="nav-text">Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" data-page="parking">
-                    <i class="fas fa-car"></i>
-                    <span class="nav-text">My Parking</span>
-                </a>
-                <a href="#" class="nav-item" data-page="history">
-                    <i class="fas fa-history"></i>
-                    <span class="nav-text">History</span>
-                </a>
-                <a href="#" class="nav-item" data-page="vehicles">
-                    <i class="fas fa-car-side"></i>
-                    <span class="nav-text">Vehicles</span>
-                </a>
-                <a href="#" class="nav-item" data-page="payments">
-                    <i class="fas fa-credit-card"></i>
-                    <span class="nav-text">Payments</span>
-                </a>
-                <a href="#" class="nav-item" data-page="profile">
-                    <i class="fas fa-user"></i>
-                    <span class="nav-text">Profile</span>
-                </a>
-                <a href="#" class="nav-item" data-page="settings">
-                    <i class="fas fa-cog"></i>
-                    <span class="nav-text">Settings</span>
-                </a>
+                @if(Auth::user()->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-text">Admin Dashboard</span>
+                    </a>
+                    <a href="{{ route('admin.occupancy') }}" class="nav-item {{ request()->routeIs('admin.occupancy') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span class="nav-text">Occupancy Overview</span>
+                    </a>
+                    <a href="{{ route('admin.slots') }}" class="nav-item {{ request()->routeIs('admin.slots') ? 'active' : '' }}">
+                        <i class="fas fa-parking"></i>
+                        <span class="nav-text">Slot Management</span>
+                    </a>
+                    <a href="{{ route('admin.logs') }}" class="nav-item {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
+                        <i class="fas fa-history"></i>
+                        <span class="nav-text">Parking Logs</span>
+                    </a>
+                    <a href="{{ route('admin.users') }}" class="nav-item {{ request()->routeIs('admin.users') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i>
+                        <span class="nav-text">User Management</span>
+                    </a>
+                @else
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="parking">
+                        <i class="fas fa-car"></i>
+                        <span class="nav-text">My Parking</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="history">
+                        <i class="fas fa-history"></i>
+                        <span class="nav-text">History</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="vehicles">
+                        <i class="fas fa-car-side"></i>
+                        <span class="nav-text">Vehicles</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="payments">
+                        <i class="fas fa-credit-card"></i>
+                        <span class="nav-text">Payments</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="profile">
+                        <i class="fas fa-user"></i>
+                        <span class="nav-text">Profile</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                @endif
             </nav>
             <div class="sidebar-footer p-4">
                 <button class="btn btn-danger btn-block" onclick="logout()">
@@ -2101,9 +2124,9 @@
             // Navigation
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
-                    e.preventDefault();
                     const page = this.dataset.page;
                     if (page) {
+                        e.preventDefault();
                         showPage(page);
                     }
                 });

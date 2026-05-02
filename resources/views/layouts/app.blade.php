@@ -103,18 +103,21 @@
         <span class="nav-section-label">Menu</span>
 
         <nav>
-            @if(Auth::user()->role === 'admin')
+            @if(Auth::user()->isAdmin())
                 {{-- Admin Links --}}
-                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-th-large"></i> Occupancy Overview
+                <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i> Admin Dashboard
                 </a>
-                <a href="/admin/slots" class="nav-item {{ request()->is('admin/slots') ? 'active' : '' }}">
+                <a href="{{ route('admin.occupancy') }}" class="nav-item {{ request()->routeIs('admin.occupancy') ? 'active' : '' }}">
+                    <i class="fas fa-chart-bar"></i> Occupancy Overview
+                </a>
+                <a href="{{ route('admin.slots') }}" class="nav-item {{ request()->routeIs('admin.slots') ? 'active' : '' }}">
                     <i class="fas fa-parking"></i> Slot Management
                 </a>
-                <a href="/admin/logs" class="nav-item {{ request()->is('admin/logs') ? 'active' : '' }}">
+                <a href="{{ route('admin.logs') }}" class="nav-item {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
                     <i class="fas fa-history"></i> Parking Logs
                 </a>
-                <a href="/admin/users" class="nav-item {{ request()->is('admin/users') ? 'active' : '' }}">
+                <a href="{{ route('admin.users') }}" class="nav-item {{ request()->routeIs('admin.users') ? 'active' : '' }}">
                     <i class="fas fa-users"></i> User Management
                 </a>
             @else

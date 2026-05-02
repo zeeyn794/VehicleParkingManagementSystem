@@ -1,32 +1,100 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Admin Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.modern-admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-medium mb-4">ParkMaster Systems Control Panel</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="border p-4 rounded bg-gray-50">
-                            <p class="text-sm text-gray-600">Total Slots</p>
-                            <p class="text-2xl font-bold">{{ $totalSlots ?? 50 }}</p>
-                        </div>
-                        <div class="border p-4 rounded bg-gray-50">
-                            <p class="text-sm text-gray-600">Available</p>
-                            <p class="text-2xl font-bold text-green-600">{{ $availableSlots ?? 38 }}</p>
-                        </div>
-                        <div class="border p-4 rounded bg-gray-50">
-                            <p class="text-sm text-gray-600">Occupancy</p>
-                            <p class="text-2xl font-bold text-blue-600">{{ $occupancyRate ?? 24 }}%</p>
-                        </div>
-                    </div>
-                </div>
+@section('content')
+<!-- Welcome Message -->
+<div class="overview-card" style="margin-bottom: 2rem;">
+    <div class="overview-header">
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Welcome back, {{ auth()->user()->name }}</div>
+            <div style="color: var(--text-secondary);">Your admin workspace is ready. Monitor parking occupancy, manage slots, review logs, and handle user accounts efficiently.</div>
+        </div>
+        <div class="overview-icon icon-primary">
+            <i class="fas fa-user-shield"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Statistics -->
+<section class="overview-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="overview-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
+        <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Total Parking Slots</div>
+                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">{{ $totalSlots }}</div>
+                <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Active parking spaces</div>
+            </div>
+            <div class="overview-icon icon-primary" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
+                <i class="fas fa-car"></i>
             </div>
         </div>
     </div>
-</x-app-layout>
+    <div class="overview-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
+        <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Occupied Slots</div>
+                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">{{ $occupied }}</div>
+                <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Currently in use</div>
+            </div>
+            <div class="overview-icon icon-warning" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(245, 158, 11, 0.1); color: var(--warning-color);">
+                <i class="fas fa-parking"></i>
+            </div>
+        </div>
+    </div>
+    <div class="overview-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
+        <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Available Slots</div>
+                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">{{ $available }}</div>
+                <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Ready for parking</div>
+            </div>
+            <div class="overview-icon icon-success" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Management Quick Access -->
+<section class="management-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <a href="{{ route('admin.slots') }}" class="management-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-primary); border: 1px solid transparent;">
+        <div class="management-icon" style="width: 56px; height: 56px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
+            <i class="fas fa-plus-square"></i>
+        </div>
+        <div class="management-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Slot Management</div>
+        <div class="management-description" style="color: var(--text-secondary);">Add, edit, or remove parking slots to optimize space utilization.</div>
+    </a>
+    <a href="{{ route('admin.logs') }}" class="management-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-primary); border: 1px solid transparent;">
+        <div class="management-icon" style="width: 56px; height: 56px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
+            <i class="fas fa-history"></i>
+        </div>
+        <div class="management-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Parking Logs</div>
+        <div class="management-description" style="color: var(--text-secondary);">Access detailed logs of parking sessions, including entry and exit times.</div>
+    </a>
+    <a href="{{ route('admin.users') }}" class="management-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-primary); border: 1px solid transparent;">
+        <div class="management-icon" style="width: 56px; height: 56px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
+            <i class="fas fa-user-cog"></i>
+        </div>
+        <div class="management-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">User Management</div>
+        <div class="management-description" style="color: var(--text-secondary);">Manage user registrations, permissions, and account statuses.</div>
+    </a>
+</section>
+
+<!-- Recent Activity -->
+<section class="activity-section" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 class="section-title" style="font-size: 1.5rem; font-weight: 700;">Recent Activity</h2>
+        <a href="{{ route('admin.logs') }}" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">View All</a>
+    </div>
+    <div class="activity-list" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="activity-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(245, 48, 3, 0.05); border-radius: 0.125rem;">
+            <div class="activity-icon" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--primary-color); color: white;">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-text">System is running normally</div>
+                <div class="activity-time">Monitor your facility in real-time</div>
+            </div>
+        </div>
+    </div>
+</section>
+@endsection

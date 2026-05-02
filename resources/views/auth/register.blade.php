@@ -24,14 +24,7 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <div class="mt-4">
-    <x-input-label for="role" :value="__('Register As')" class="form-label" />
-    <select id="role" name="role" class="vms-input block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-        <option value="user">Regular User</option>
-        <option value="admin">Administrator</option>
-    </select>
-    <x-input-error :messages="$errors->get('role')" class="mt-2" />
-</div>
+
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

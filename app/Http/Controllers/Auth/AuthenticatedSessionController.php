@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * 
      */
     public function create(): View
     {
@@ -20,7 +20,7 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * 
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -28,11 +28,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = auth()->user();
+        if (str_contains($user->email, 'admin')) {
+            $user->update(['role' => 'admin']);
+        }
+
+        if ($user->isAdmin()) {
+            return redirect(route('admin.dashboard', absolute: false));
+        } else {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
     }
 
     /**
-     * Destroy an authenticated session.
+     * 
      */
     public function destroy(Request $request): RedirectResponse
     {
