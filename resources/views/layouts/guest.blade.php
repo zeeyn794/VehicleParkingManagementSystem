@@ -5,26 +5,65 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'ParkMaster') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        @stack('styles')
+        
+        <style>
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            }
+            .auth-bg {
+                background: radial-gradient(circle at top right, #fff5f2, transparent),
+                            radial-gradient(circle at bottom left, #fdfcfb, transparent);
+                background-color: #fdfdfc;
+            }
+            .dark .auth-bg {
+                background: radial-gradient(circle at top right, #1a100d, transparent),
+                            radial-gradient(circle at bottom left, #0a0a0a, transparent);
+                background-color: #0a0a0a;
+            }
+        </style>
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+    <body class="font-sans text-[#1b1b18] dark:text-[#EDEDEC] antialiased auth-bg min-h-screen flex flex-col">
+        
+        <header class="w-full p-6 lg:px-20 flex justify-between items-center bg-white/50 dark:bg-black/50 backdrop-blur-sm sticky top-0 z-50">
+            <div class="text-2xl font-bold tracking-tighter">
+                <a href="/" class="hover:opacity-80 transition-opacity">
+                    <span class="text-[#f53003]">Park</span>Master
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <nav class="flex items-center gap-4">
+                <a href="{{ route('login') }}" class="px-4 py-2 text-sm font-medium hover:text-[#f53003] transition-colors {{ request()->routeIs('login') ? 'text-[#f53003]' : '' }}">
+                    Log in
+                </a>
+                <a href="{{ route('register') }}" class="px-5 py-2 bg-[#f53003] text-white rounded-sm text-sm font-bold shadow-md hover:shadow-lg hover:opacity-90 transition-all {{ request()->routeIs('register') ? 'ring-2 ring-[#f53003] ring-offset-2' : '' }}">
+                    Register
+                </a>
+            </nav>
+        </header>
+
+        <div class="flex-grow flex flex-col sm:justify-center items-center pt-6 sm:pt-0 px-6 pb-12">
+            <div class="w-full sm:max-w-md mt-6 px-8 py-10 glass-effect rounded-xl overflow-hidden">
                 {{ $slot }}
             </div>
         </div>
+
+        <footer class="w-full p-6 text-center border-t border-[#19140015] dark:border-[#3E3E3A15]">
+            <p class="text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+            </p>
+        </footer>
     </body>
 </html>

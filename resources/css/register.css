@@ -1,75 +1,163 @@
 .logo-wrapper {
-    width: 100px;           
-    height: 100px;          
-    margin: 0 auto 1.5rem;  
+    width: 80px;           
+    height: 80px;
+    margin: 0 auto 1.5rem;
     border-radius: 50%;     
     overflow: hidden;       
     display: flex;          
     justify-content: center;
     align-items: center;
     background-color: white; 
-    border: 4px solid  #d94f36; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 2px solid #f53003; 
+    box-shadow: 0 10px 25px -5px rgba(245, 48, 3, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.logo-wrapper:hover {
+    transform: rotate(0deg) scale(1.05);
 }
 
 .logo-wrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover;      
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .register-title {
-    color:  #d94f36; 
-    font-size: 1.875rem;
+    color: #1b1b18; 
+    font-size: 1.75rem;
     font-weight: 800;
     text-align: center;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.025em;
+}
+
+.dark .register-title {
+    color: #EDEDEC;
+}
+
+.register-subtitle {
+    font-size: 0.875rem; 
+    color: #706f6c;     
+    text-align: center;
+}
+
+.dark .register-subtitle {
+    color: #A1A09A;
+}
+
+.form-label {
+    display: block;
+    color: #1b1b18;     
+    font-weight: 600;    
+    font-size: 0.875rem;
     margin-bottom: 0.5rem;
 }
 
+.dark .form-label {
+    color: #EDEDEC;
+}
 
 .vms-input {
     width: 100%;
-    margin-top: 4px;
-    border: 1px solid #d1d5db; 
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #e5e7eb; 
     border-radius: 8px;
-    padding: 10px;
-    background-color: #f9fafb; 
-    transition: all 0.2s ease-in-out; 
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
 }
 
+.dark .vms-input {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: #3E3E3A;
+    color: white;
+}
 
 .vms-input:focus {
     outline: none; 
-    border-color:  #d94f36; 
-   
-    box-shadow: 0 0 0 4px #ef5449; 
-    
-    background-color: #ffffff; 
+    border-color: #f53003; 
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(245, 48, 3, 0.1); 
+}
+
+.dark .vms-input:focus {
+    background-color: black;
 }
 
 .vms-btn-primary {
     width: 100%;
     display: flex;
     justify-content: center;
-    padding: 12px;
-    background-color:  #d94f36; 
+    padding: 0.875rem 0;
+    background-color: #f53003; 
     color: #ffffff;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 12px rgba(245, 48, 3, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 
 .vms-btn-primary:hover {
-    background-color:  #d94f36;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    background-color: #d42a02;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(245, 48, 3, 0.4);
 }
 
-
 .vms-btn-primary:active {
-    transform: scale(0.97);
+    transform: translateY(0);
+}
+
+.login-link {
+    color: #706f6c;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.dark .login-link {
+    color: #A1A09A;
+}
+
+.login-link:hover {
+    color: #f53003;
+}
+
+/* Password Toggle Styling */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #706f6c;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.dark .toggle-password {
+    color: #A1A09A;
+}
+
+.toggle-password:hover {
+    color: #f53003;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
 }
