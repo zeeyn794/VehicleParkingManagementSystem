@@ -3,10 +3,13 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="flex items-center">
-                        <span class="font-black text-2xl text-gray-800">
-                            Park<span class="text-blue-600">Master</span>
-                        </span>
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 group">
+                        <div class="w-8 h-8 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-center overflow-hidden transition-all group-hover:scale-110">
+                            <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-xl font-bold tracking-tighter">
+                            <span class="text-[#f53003]">Park</span>Master
+                        </div>
                     </a>
                 </div>
 

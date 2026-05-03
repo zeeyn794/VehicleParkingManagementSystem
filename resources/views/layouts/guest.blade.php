@@ -38,9 +38,14 @@
     <body class="font-sans text-[#1b1b18] dark:text-[#EDEDEC] antialiased auth-bg min-h-screen flex flex-col">
         
         <header class="w-full p-6 lg:px-20 flex justify-between items-center bg-white/50 dark:bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-            <div class="text-2xl font-bold tracking-tighter">
-                <a href="/" class="hover:opacity-80 transition-opacity">
-                    <span class="text-[#f53003]">Park</span>Master
+            <div class="flex items-center gap-3">
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 bg-white rounded-xl shadow-sm border border-[#19140010] flex items-center justify-center overflow-hidden transition-all group-hover:shadow-md group-hover:scale-110">
+                        <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" class="w-full h-full object-cover">
+                    </div>
+                    <div class="text-2xl font-bold tracking-tighter">
+                        <span class="text-[#f53003]">Park</span>Master
+                    </div>
                 </a>
             </div>
 
