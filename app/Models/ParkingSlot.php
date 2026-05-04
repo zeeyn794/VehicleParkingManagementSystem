@@ -12,13 +12,14 @@ class ParkingSlot extends Model
     protected $fillable = [
         'slot_code',
         'slot_number',
+        'location',
         'status',
         'type',
         'hourly_rate',
     ];
 
     /**
-     * Relationship with ParkingLogs or Sessions
+     * 
      */
     public function parkingLogs()
     {

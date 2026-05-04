@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class ParkingLog extends Model
 {
     protected $fillable = [
+        'user_id',
         'vehicle_id',
         'parking_slot_id',
         'entry_time',
@@ -19,6 +21,11 @@ class ParkingLog extends Model
         'exit_time' => 'datetime',
         'total_fee' => 'decimal:2',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function vehicle()
     {

@@ -17,8 +17,13 @@ class DashboardController extends Controller
         $occupied = ParkingSlot::where('status', 'occupied')->count();
         $available = $totalSlots - $occupied;
         $totalUsers = User::where('role', '!=', 'admin')->count();
+        // Only sum fees from completed sessions (exit_time has passed) to match what users actually paid
+        $totalEarnings = ParkingLog::whereNotNull('total_fee')
+            ->where('total_fee', '>', 0)
+            ->where('exit_time', '<=', now())
+            ->sum('total_fee');
 
-        return view('admin.dashboard', compact('totalSlots', 'occupied', 'available', 'totalUsers'));
+        return view('admin.dashboard', compact('totalSlots', 'occupied', 'available', 'totalUsers', 'totalEarnings'));
     }
     public function occupancy()
     {
@@ -56,6 +61,44 @@ class DashboardController extends Controller
         return view('admin.logs', compact('logs'));
     }
 
+    public function earnings(Request $request)
+    {
+        // Scope all earnings queries to completed sessions only (exit_time in the past)
+        $baseQuery = fn() => ParkingLog::whereNotNull('total_fee')
+            ->where('total_fee', '>', 0)
+            ->where('exit_time', '<=', now());
+
+        $todayEarnings = $baseQuery()->whereDate('exit_time', \Carbon\Carbon::today())->sum('total_fee');
+        $monthEarnings = $baseQuery()->whereMonth('exit_time', \Carbon\Carbon::now()->month)
+                                    ->whereYear('exit_time', \Carbon\Carbon::now()->year)
+                                    ->sum('total_fee');
+        $totalEarnings = $baseQuery()->sum('total_fee');
+
+        $query = ParkingLog::with(['user', 'parkingSlot', 'vehicle.user'])
+            ->whereNotNull('total_fee')
+            ->where('total_fee', '>', 0)
+            ->where('exit_time', '<=', now());
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($sq) use ($search) {
+                    $sq->where('name', 'like', "%$search%");
+                })->orWhereHas('vehicle.user', function($sq) use ($search) {
+                    $sq->where('name', 'like', "%$search%");
+                })->orWhereHas('parkingSlot', function($sq) use ($search) {
+                    $sq->where('slot_number', 'like', "%$search%");
+                })->orWhereHas('vehicle', function($sq) use ($search) {
+                    $sq->where('license_plate', 'like', "%$search%");
+                });
+            });
+        }
+
+        $transactions = $query->latest()->paginate(15)->withQueryString();
+        
+        return view('admin.earnings', compact('todayEarnings', 'monthEarnings', 'totalEarnings', 'transactions'));
+    }
+
     public function users()
     {
         $users = User::where('role', '!=', 'admin')->get();
@@ -68,18 +111,39 @@ class DashboardController extends Controller
             'slot_number' => 'required|unique:parking_slots,slot_number',
             'location' => 'required',
             'type' => 'required',
-            'hourly_rate' => 'required|numeric|min:0',
         ]);
 
         ParkingSlot::create([
             'slot_number' => $request->slot_number,
             'location' => $request->location,
             'type' => $request->type,
-            'hourly_rate' => $request->hourly_rate,
+            'hourly_rate' => $request->hourly_rate ?? 0,
             'status' => 'available',
         ]);
 
         return back()->with('success', 'Parking slot created successfully.');
+    }
+
+    public function updateSlot(Request $request, $id)
+    {
+        $slot = ParkingSlot::findOrFail($id);
+
+        $request->validate([
+            'slot_number' => 'required|unique:parking_slots,slot_number,' . $slot->id,
+            'location' => 'required',
+            'type' => 'required',
+            'status' => 'required|in:available,occupied,maintenance',
+        ]);
+
+        $slot->update([
+            'slot_number' => $request->slot_number,
+            'location' => $request->location,
+            'type' => $request->type,
+            'hourly_rate' => $request->hourly_rate ?? $slot->hourly_rate,
+            'status' => $request->status,
+        ]);
+
+        return back()->with('success', 'Parking slot updated successfully.');
     }
 
     public function destroySlot($id)

@@ -54,7 +54,7 @@
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->vehicle->license_plate ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->entry_time ? \Carbon\Carbon::parse($log->entry_time)->format('M d, H:i') : '-' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->exit_time ? \Carbon\Carbon::parse($log->exit_time)->format('M d, H:i') : '-' }}</td>
-                    <td style="padding: 1rem; color: var(--primary-color); font-weight: 700;">${{ number_format($log->total_fee, 2) }}</td>
+                    <td style="padding: 1rem; color: var(--primary-color); font-weight: 700;">₱{{ number_format($log->total_fee, 2) }}</td>
                 </tr>
                 @empty
                 <tr>

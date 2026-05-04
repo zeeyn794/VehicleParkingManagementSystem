@@ -9,6 +9,8 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\ParkingRate;
+
 class ModernDashboardController extends Controller
 {
     public function index()
@@ -51,6 +53,8 @@ class ModernDashboardController extends Controller
         $totalSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->count() : 0;
 
+        $parkingRates = ParkingRate::where('is_active', true)->get();
+
         return view('dashboard', compact(
             'user',
             'activeSessions',
@@ -59,7 +63,8 @@ class ModernDashboardController extends Controller
             'allParkingSlots',
             'parkingHistory',
             'totalSpent',
-            'totalSessions'
+            'totalSessions',
+            'parkingRates'
         ));
     }
 
@@ -87,15 +92,23 @@ class ModernDashboardController extends Controller
             ->firstOrFail();
 
         $entryTime = now();
-        $exitTime = $entryTime->copy()->addHours($request->duration_hours);
-        $totalFee = $slot->hourly_rate * $request->duration_hours;
+        $durationHours = (int) $request->duration_hours;
+        $exitTime = $entryTime->copy()->addHours($durationHours);
+        
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $vehicle->type)
+            ->where('is_active', true)
+            ->first();
+            
+        $hourlyRate = $rate ? $rate->hourly_rate : 3.00; 
+        $totalFee = $hourlyRate * $durationHours;
 
         $parkingLog = ParkingLog::create([
-            'vehicle_id' => $vehicle->id,
+            'user_id'         => $user->id,
+            'vehicle_id'      => $vehicle->id,
             'parking_slot_id' => $slot->id,
-            'entry_time' => $entryTime,
-            'exit_time' => $exitTime,
-            'total_fee' => $totalFee,
+            'entry_time'      => $entryTime,
+            'exit_time'       => $exitTime,
+            'total_fee'       => $totalFee,
         ]);
 
         $slot->update(['status' => 'occupied']);
@@ -131,9 +144,14 @@ class ModernDashboardController extends Controller
             ], 403);
         }
 
-        $additionalHours = $request->additional_hours;
-        $slot = $session->parkingSlot;
-        $additionalFee = $slot->hourly_rate * $additionalHours;
+        $additionalHours = (int) $request->additional_hours;
+        
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $session->vehicle->type)
+            ->where('is_active', true)
+            ->first();
+            
+        $hourlyRate = $rate ? $rate->hourly_rate : 3.00; 
+        $additionalFee = $hourlyRate * $additionalHours;
 
         $session->exit_time = $session->exit_time->addHours($additionalHours);
         $session->total_fee += $additionalFee;
@@ -245,7 +263,7 @@ class ModernDashboardController extends Controller
                     'duration' => $record->entry_time->diffInHours($record->exit_time) . 'h ' . 
                                ($record->entry_time->diffInMinutes($record->exit_time) % 60) . 'm',
                     'vehicle' => $record->vehicle->license_plate,
-                    'amount' => '$' . number_format($record->total_fee, 2),
+                    'amount' => '₱' . number_format($record->total_fee, 2),
                     'status' => $record->exit_time > now() ? 'active' : 'completed'
                 ];
             })
@@ -255,7 +273,7 @@ class ModernDashboardController extends Controller
     public function addVehicle(Request $request)
     {
         $request->validate([
-            'type' => 'required|string|in:car,motorcycle,truck,suv,van,electric,hybrid',
+            'type' => 'required|string|exists:parking_rates,vehicle_type',
             'license_plate' => 'required|string|unique:vehicles,license_plate',
             'make' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
@@ -297,5 +315,43 @@ class ModernDashboardController extends Controller
             'payment_type' => $request->payment_type,
             'is_primary' => $request->boolean('is_primary', false)
         ]);
+    }
+
+    public function historyPage(Request $request)
+    {
+        $user = auth()->user();
+
+        $query = ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
+            ->with(['parkingSlot', 'vehicle'])
+            ->latest('entry_time');
+
+        if ($request->filter && $request->filter !== 'all') {
+            switch ($request->filter) {
+                case 'today':
+                    $query->whereDate('entry_time', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('entry_time', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('entry_time', now()->month)
+                          ->whereYear('entry_time', now()->year);
+                    break;
+            }
+        }
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('vehicle', fn($s) => $s->where('license_plate', 'like', "%$search%"))
+                  ->orWhereHas('parkingSlot', fn($s) => $s->where('slot_number', 'like', "%$search%"));
+            });
+        }
+
+        $transactions = $query->paginate(15)->withQueryString();
+        $totalSpent    = ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))->sum('total_fee');
+        $totalSessions = ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))->count();
+
+        return view('user.history', compact('transactions', 'totalSpent', 'totalSessions'));
     }
 }

@@ -205,15 +205,11 @@
                         </div>
                     </div>
                     <div class="relative">
-                        <div class="aspect-square bg-gradient-to-br from-[#f53003] to-[#ff6b4a] rounded-[3rem] shadow-2xl flex items-center justify-center p-12 overflow-hidden">
-                            <div class="text-white text-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="opacity-20 absolute -top-10 -right-10"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                                <h3 class="text-3xl font-bold mb-4 italic">"Efficiency is our middle name."</h3>
-                                <p class="text-lg opacity-90">- ParkMaster Team</p>
-                            </div>
+                        <div class="aspect-square rounded-[3rem] shadow-2xl overflow-hidden">
+                            <img src="{{ asset('images/parking  lot.webp') }}" alt="Parking Lot" class="w-full h-full object-cover">
                         </div>
-                        <!-- Decorative element -->
                         <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-[#f5300320] rounded-full blur-3xl"></div>
+                        <div class="absolute -top-6 -right-6 w-24 h-24 bg-[#f5300315] rounded-full blur-2xl"></div>
                     </div>
                 </div>
             </div>

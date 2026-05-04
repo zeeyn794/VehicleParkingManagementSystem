@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
-        /* CSS Variables for Design System - ParkMaster Theme */
         :root {
             --primary-color: #f53003;
             --primary-dark: #d42a02;
@@ -32,7 +31,6 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Dark Mode Variables - ParkMaster Theme */
         [data-theme="dark"] {
             --light-bg: #0a0a0a;
             --light-surface: #1C1C1A;
@@ -43,7 +41,6 @@
             --border-color: #3E3E3A;
         }
 
-        /* Base Styles - ParkMaster Theme */
         * {
             margin: 0;
             padding: 0;
@@ -58,13 +55,11 @@
             transition: var(--transition);
         }
 
-        /* Layout Container */
         .dashboard-container {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar Navigation */
         .sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.8);
@@ -169,7 +164,6 @@
             display: none;
         }
 
-        /* Main Content Area */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -180,7 +174,6 @@
             margin-left: 80px;
         }
 
-        /* Header - ParkMaster Theme */
         .header {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
@@ -332,12 +325,10 @@
             color: var(--text-secondary);
         }
 
-        /* Dashboard Content */
         .dashboard-content {
             padding: 2rem;
         }
 
-        /* User Overview Panel */
         .overview-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -428,7 +419,6 @@
             color: var(--primary-color);
         }
 
-        /* Parking Grid */
         .parking-section {
             background: var(--light-surface);
             border-radius: 0.125rem;
@@ -541,7 +531,6 @@
             border-radius: 50%;
         }
 
-        /* Timer Section */
         .timer-section {
             background: var(--light-surface);
             border-radius: 0.125rem;
@@ -595,7 +584,6 @@
             color: var(--text-secondary);
         }
 
-        /* History Section */
         .history-section {
             background: var(--light-surface);
             border-radius: 0.125rem;
@@ -650,7 +638,6 @@
             background: rgba(245, 48, 3, 0.05);
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -829,7 +816,6 @@
             justify-content: center;
         }
 
-        /* Notifications */
         .notification-container {
             position: fixed;
             top: 1rem;
@@ -895,7 +881,6 @@
             font-size: 0.875rem;
         }
 
-        /* Responsive Design */
         @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -975,7 +960,6 @@
             }
         }
 
-        /* Loading Animation */
         .loading {
             display: inline-block;
             width: 20px;
@@ -990,7 +974,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Page Sections */
         .page-section {
             animation: fadeIn 0.3s ease-out;
         }
@@ -1010,7 +993,6 @@
             display: none;
         }
 
-        /* Utility Classes */
         .text-center { text-align: center; }
         .text-left { text-align: left; }
         .text-right { text-align: right; }
@@ -1028,11 +1010,10 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <i class="fas fa-parking"></i>
+                    <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 32px; height: 32px; object-fit: cover; border-radius: 6px;">
                     <span class="logo-text"><span>Park</span>Master</span>
                 </div>
             </div>
@@ -1097,14 +1078,15 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
+                    <div class="header-logo lg:hidden">
+                        <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 30px; height: 30px; object-fit: cover; border-radius: 6px;">
+                    </div>
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
                         <input type="text" placeholder="Search parking slots, history..." id="searchInput">
@@ -1128,12 +1110,9 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
             <div class="dashboard-content">
 
-                <!-- DASHBOARD PAGE -->
                 <section class="page-section" id="page-dashboard">
-                <!-- User Overview Panel -->
                 <section class="overview-section">
                     <div class="overview-card">
                         <div class="overview-header">
@@ -1191,40 +1170,26 @@
                                 <i class="fas fa-wallet"></i>
                             </div>
                         </div>
-                        <div class="overview-value">${{ number_format($totalSpent, 2) }}</div>
+                        <div class="overview-value">₱{{ number_format($totalSpent, 2) }}</div>
                         <div class="overview-label">{{ $totalSessions }} Sessions Total</div>
                     </div>
-                </section>
 
-                <!-- Real-Time Parking Availability -->
-                <section class="parking-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Parking Availability</h2>
-                        <div class="parking-stats">
-                            <div class="stat-item">
-                                <div class="stat-dot available"></div>
-                                <span>12 Available</span>
+                    <div class="overview-card" style="cursor: pointer;" onclick="showPage('vehicles')">
+                        <div class="overview-header">
+                            <div>
+                                <div class="overview-title">My Vehicles</div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-dot occupied"></div>
-                                <span>8 Occupied</span>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-dot reserved"></div>
-                                <span>4 Reserved</span>
+                            <div class="overview-icon icon-primary" style="background: rgba(34, 211, 238, 0.1); color: var(--secondary-color);">
+                                <i class="fas fa-car-side"></i>
                             </div>
                         </div>
+                        <div class="overview-value" id="overview-vehicle-count">{{ $userVehicles->count() }}</div>
+                        <div class="overview-label">Registered Vehicles</div>
                     </div>
-                    <div class="parking-grid" id="parkingGrid">
-                        <!-- Parking slots will be generated by JavaScript -->
-                    </div>
-                    <button class="btn btn-primary" onclick="refreshParkingGrid()">
-                        <i class="fas fa-sync-alt"></i>
-                        Refresh Status
-                    </button>
                 </section>
 
-                <!-- Live Timer & Billing -->
+
+
                 <section class="timer-section" id="timerSection">
                     <div class="section-header">
                         <h2 class="section-title">Current Session</h2>
@@ -1235,11 +1200,11 @@
                     </div>
                     <div class="billing-info">
                         <div class="billing-item">
-                            <div class="billing-value">$6.25</div>
+                            <div class="billing-value">₱6.25</div>
                             <div class="billing-label">Current Fee</div>
                         </div>
                         <div class="billing-item">
-                            <div class="billing-value">$3.00</div>
+                            <div class="billing-value">₱3.00</div>
                             <div class="billing-label">Hourly Rate</div>
                         </div>
                         <div class="billing-item">
@@ -1263,7 +1228,6 @@
                     </div>
                 </section>
 
-                <!-- Parking History -->
                 <section class="history-section">
                     <div class="section-header">
                         <h2 class="section-title">Parking History</h2>
@@ -1294,14 +1258,12 @@
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody">
-                                <!-- History rows will be generated by JavaScript -->
                             </tbody>
                         </table>
                     </div>
                 </section>
-                </section><!-- End Dashboard Page -->
+                </section>
 
-                <!-- MY PARKING PAGE -->
                 <section class="page-section hidden" id="page-parking">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1341,18 +1303,39 @@
                             </div>
                             @endforeach
                         @else
-                            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                             <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
                                 <i class="fas fa-parking" style="font-size: 3rem; margin-bottom: 1rem;"></i>
                                 <p>No active parking sessions</p>
-                                <button class="btn btn-primary" onclick="showPage('dashboard')" style="margin-top: 1rem;">
+                                <a href="#parkingAvailabilityGrid" class="btn btn-primary" style="margin-top: 1rem;">
                                     Book a Slot
-                                </button>
+                                </a>
                             </div>
                         @endif
                     </div>
+
+                    <div class="parking-section" id="parkingAvailabilityGrid" style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                        <div class="section-header">
+                            <h2 class="section-title">Parking Availability</h2>
+                            <div class="parking-stats">
+                                <div class="stat-item">
+                                    <div class="stat-dot available"></div>
+                                    <span>Available</span>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-dot occupied"></div>
+                                    <span>Occupied</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="parking-grid" id="parkingGrid">
+                        </div>
+                        <button class="btn btn-primary" onclick="refreshParkingGrid()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh Status
+                        </button>
+                    </div>
                 </section>
 
-                <!-- HISTORY PAGE -->
                 <section class="page-section hidden" id="page-history">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1399,7 +1382,6 @@
                     </div>
                 </section>
 
-                <!-- VEHICLES PAGE -->
                 <section class="page-section hidden" id="page-vehicles">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1438,7 +1420,6 @@
                     </div>
                 </section>
 
-                <!-- PAYMENTS PAGE -->
                 <section class="page-section hidden" id="page-payments">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1465,7 +1446,7 @@
                                     </div>
                                 </div>
                                 <div class="overview-value" style="font-size: 1.25rem;">E-Wallet</div>
-                                <div class="overview-label">Balance: $45.50</div>
+                                <div class="overview-label">Balance: ₱45.50</div>
                             </div>
                             <div class="overview-card" style="cursor: pointer;" onclick="showNotification('Cash payment selected', 'info')">
                                 <div class="overview-header">
@@ -1504,7 +1485,6 @@
                     </div>
                 </section>
 
-                <!-- PROFILE PAGE -->
                 <section class="page-section hidden" id="page-profile">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1513,11 +1493,11 @@
                         <div style="max-width: 600px;">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" class="form-input" value="{{ $user->name }}" readonly>
+                                <input type="text" class="form-input" id="display-user-name" value="{{ $user->name }}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-input" value="{{ $user->email }}" readonly>
+                                <input type="email" class="form-input" id="display-user-email" value="{{ $user->email }}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Role</label>
@@ -1528,16 +1508,19 @@
                                 <input type="text" class="form-input" value="{{ $user->created_at->format('F Y') }}" readonly>
                             </div>
                             <div class="btn-group">
-                                <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                                <button class="btn btn-primary" onclick="openModal('editProfileModal')">
                                     <i class="fas fa-edit"></i>
                                     Edit Profile
-                                </a>
+                                </button>
+                                <button class="btn btn-secondary" onclick="openModal('changePasswordModal')">
+                                    <i class="fas fa-lock"></i>
+                                    Change Password
+                                </button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- SETTINGS PAGE -->
                 <section class="page-section hidden" id="page-settings">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1588,7 +1571,38 @@
         </main>
     </div>
 
-    <!-- Booking Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile</h3>
+                <button class="modal-close" onclick="closeModal('editProfileModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editProfileForm">
+                @csrf
+                @method('patch')
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" id="edit-name" class="form-input" value="{{ $user->name }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" id="edit-email" class="form-input" value="{{ $user->email }}" required>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editProfileModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="modal" id="bookingModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1615,16 +1629,14 @@
                     <label class="form-label">Duration</label>
                     <select class="form-input" id="durationSelect" required>
                         <option value="">Select Duration</option>
-                        <option value="1">1 Hour - $3.00</option>
-                        <option value="2">2 Hours - $6.00</option>
-                        <option value="4">4 Hours - $12.00</option>
-                        <option value="8">8 Hours - $24.00</option>
-                        <option value="24">24 Hours - $72.00</option>
+                        @for($i = 1; $i <= 10; $i++)
+                            <option value="{{ $i }}">{{ $i }} Hour{{ $i > 1 ? 's' : '' }}</option>
+                        @endfor
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Estimated Cost</label>
-                    <input type="text" class="form-input" id="estimatedCost" readonly value="$0.00">
+                    <input type="text" class="form-input" id="estimatedCost" readonly value="₱0.00">
                 </div>
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('bookingModal')">
@@ -1639,7 +1651,6 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1662,7 +1673,7 @@
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span>Total:</span>
-                            <strong id="paymentTotal" style="color: var(--primary-color);">$6.00</strong>
+                            <strong id="paymentTotal" style="color: var(--primary-color);">₱6.00</strong>
                         </div>
                     </div>
                 </div>
@@ -1700,7 +1711,6 @@
         </div>
     </div>
 
-    <!-- Add Vehicle Modal -->
     <div class="modal" id="addVehicleModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1714,13 +1724,9 @@
                     <label class="form-label">Vehicle Type *</label>
                     <select class="form-input" id="vehicleType" required>
                         <option value="">Select Type</option>
-                        <option value="car">Car</option>
-                        <option value="motorcycle">Motorcycle</option>
-                        <option value="truck">Truck</option>
-                        <option value="suv">SUV</option>
-                        <option value="van">Van</option>
-                        <option value="electric">Electric Vehicle</option>
-                        <option value="hybrid">Hybrid</option>
+                        @foreach($parkingRates as $rate)
+                            <option value="{{ $rate->vehicle_type }}">{{ ucfirst($rate->vehicle_type) }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group">
@@ -1752,7 +1758,6 @@
         </div>
     </div>
 
-    <!-- Add Payment Method Modal -->
     <div class="modal" id="addPaymentModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1831,7 +1836,6 @@
         </div>
     </div>
 
-    <!-- First Payment Setup Modal (for new users) -->
     <div class="modal" id="firstPaymentSetupModal">
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), #ff6b35);">
@@ -1901,11 +1905,56 @@
         </div>
     </div>
 
-    <!-- Notification Container -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Change Password</h3>
+                <button class="modal-close" onclick="closeModal('changePasswordModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="changePasswordForm">
+                @csrf
+                @method('put')
+                <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <div style="position: relative;">
+                        <input type="password" name="current_password" id="current_password" class="form-input" required>
+                        <i class="fas fa-eye" id="toggleCurrentPassword" onclick="togglePasswordVisibility('current_password', 'toggleCurrentPassword')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light);"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="password" class="form-input" required>
+                        <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('password', 'togglePassword')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light);"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <div style="position: relative;">
+                        <input type="password" name="password_confirmation" id="password_confirmation" class="form-input" required>
+                        <i class="fas fa-eye" id="toggleConfirmPassword" onclick="togglePasswordVisibility('password_confirmation', 'toggleConfirmPassword')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light);"></i>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('changePasswordModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="notification-container" id="notificationContainer"></div>
 
     <script>
-        // Global State Management
+        const userVehiclesData = @json($userVehicles->map(function($v) { return ['id' => $v->id, 'type' => $v->type]; })->keyBy('id'));
+        const parkingRatesData = @json($parkingRates->pluck('hourly_rate', 'vehicle_type'));
+
         const state = {
             currentUser: {
                 name: '{{ $user->name }}',
@@ -1925,7 +1974,6 @@
             historyLoaded: false
         };
 
-        // Initialize Dashboard
         document.addEventListener('DOMContentLoaded', function() {
             initializeDashboard();
             loadParkingData();
@@ -1935,14 +1983,12 @@
         });
 
         function initializeDashboard() {
-            // Load theme preference
             const savedTheme = localStorage.getItem('theme') || 'light';
             if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 updateThemeIcon();
             }
 
-            // Generate parking grid
             generateParkingGrid();
         }
 
@@ -1950,7 +1996,6 @@
             const grid = document.getElementById('parkingGrid');
             grid.innerHTML = '';
 
-            // Use real parking slot data from database
             state.parkingSlots.forEach((slotData, index) => {
                 const slot = document.createElement('div');
                 const slotNumber = slotData.slot_number || slotData.slot_code;
@@ -1979,7 +2024,7 @@
 
         function getRandomSlotStatus() {
             const statuses = ['available', 'occupied', 'reserved'];
-            const weights = [0.5, 0.35, 0.15]; // 50% available, 35% occupied, 15% reserved
+            const weights = [0.5, 0.35, 0.15]; 
             const random = Math.random();
             let cumulative = 0;
             
@@ -2013,7 +2058,6 @@
         }
 
         function loadParkingData() {
-            // Simulate loading parking data
             setTimeout(() => {
                 updateParkingStats();
             }, 1000);
@@ -2032,7 +2076,6 @@
                 stats[status]++;
             });
 
-            // Update stats display
             const statElements = document.querySelectorAll('.stat-item span');
             statElements[0].textContent = `${stats.available} Available`;
             statElements[1].textContent = `${stats.occupied} Occupied`;
@@ -2040,7 +2083,6 @@
         }
 
         function loadHistoryData() {
-            // Initially empty - will be loaded when user searches
             state.history = [];
             renderHistoryTable();
         }
@@ -2050,7 +2092,6 @@
             tbody.innerHTML = '';
 
             if (!state.historyLoaded || state.history.length === 0) {
-                // Show empty state message
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
@@ -2077,7 +2118,6 @@
         }
 
         function startTimer() {
-            // If no active session, hide timer section
             if (!state.currentSession) {
                 document.getElementById('timerSection').style.display = 'none';
                 return;
@@ -2085,7 +2125,6 @@
             
             document.getElementById('timerSection').style.display = 'block';
             
-            // Get exit time from current session
             const exitTime = new Date(state.currentSession.exit_time);
             
             state.timer = setInterval(() => {
@@ -2093,7 +2132,6 @@
                 const diff = exitTime - now;
                 
                 if (diff <= 0) {
-                    // Time's up
                     clearInterval(state.timer);
                     document.getElementById('timerDisplay').textContent = '00:00:00';
                     showNotification('Your parking session has expired!', 'warning');
@@ -2107,13 +2145,11 @@
                 const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
                 document.getElementById('timerDisplay').textContent = display;
                 
-                // Update billing info
                 updateBillingInfo();
             }, 1000);
         }
 
         function updateBillingInfo() {
-            // Show current fee based on session
             if (state.currentSession) {
                 const totalFee = parseFloat(state.currentSession.total_fee).toFixed(2);
                 document.querySelector('.billing-value').textContent = `$${totalFee}`;
@@ -2121,7 +2157,6 @@
         }
 
         function setupEventListeners() {
-            // Navigation
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
                     const page = this.dataset.page;
@@ -2132,39 +2167,43 @@
                 });
             });
 
-            // Booking form
             document.getElementById('bookingForm').addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                const slotInput = document.getElementById('selectedSlotInput').value;
+                const durationSelect = document.getElementById('durationSelect');
+                const durationVal = parseInt(durationSelect.value);
+                const durationText = durationSelect.options[durationSelect.selectedIndex].text;
+                const estimatedCost = document.getElementById('estimatedCost').value;
+
+                document.getElementById('paymentSlot').textContent = slotInput || 'N/A';
+                document.getElementById('paymentDuration').textContent = durationText || '-';
+                document.getElementById('paymentTotal').textContent = estimatedCost || '₱0.00';
+
                 openModal('paymentModal');
             });
 
-            // Payment form
             document.getElementById('paymentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 processPayment();
             });
 
-            // Duration change
             document.getElementById('durationSelect').addEventListener('change', function() {
                 updateEstimatedCost();
             });
 
-            // Search functionality
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 handleSearch(e.target.value);
             });
 
-            // History filter
             document.getElementById('historyFilter').addEventListener('change', function() {
                 filterHistory(this.value);
             });
 
-            // History search
             document.getElementById('historySearch').addEventListener('input', function(e) {
                 searchHistory(e.target.value);
             });
 
-            // Full History page search
             const fullHistorySearch = document.getElementById('fullHistorySearch');
             if (fullHistorySearch) {
                 fullHistorySearch.addEventListener('input', function(e) {
@@ -2172,7 +2211,6 @@
                 });
             }
 
-            // Full History page filter
             const fullHistoryFilter = document.getElementById('fullHistoryFilter');
             if (fullHistoryFilter) {
                 fullHistoryFilter.addEventListener('change', function() {
@@ -2180,13 +2218,11 @@
                 });
             }
 
-            // Add Vehicle Form
             document.getElementById('addVehicleForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitAddVehicle();
             });
 
-            // Add Payment Form - Payment Type Change
             const paymentType = document.getElementById('paymentType');
             if (paymentType) {
                 paymentType.addEventListener('change', function() {
@@ -2194,13 +2230,11 @@
                 });
             }
 
-            // Add Payment Form Submit
             document.getElementById('addPaymentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitAddPayment();
             });
 
-            // First Payment Setup - Payment Type Change
             const firstPaymentType = document.getElementById('firstPaymentType');
             if (firstPaymentType) {
                 firstPaymentType.addEventListener('change', function() {
@@ -2208,12 +2242,98 @@
                 });
             }
 
-            // First Payment Form Submit
             document.getElementById('firstPaymentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitFirstPayment();
             });
 
+            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitChangePassword();
+            });
+
+            document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitEditProfile();
+            });
+
+        }
+
+        function submitEditProfile() {
+            const form = document.getElementById('editProfileForm');
+            const formData = new FormData(form);
+            const name = document.getElementById('edit-name').value;
+            const email = document.getElementById('edit-email').value;
+            
+            showNotification('Updating profile...', 'info');
+            
+            fetch('{{ route('profile.update') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(async response => {
+                if (response.ok || response.status === 302) {
+                    showNotification('Profile updated successfully!', 'success');
+                    closeModal('editProfileModal');
+                    
+                    document.querySelectorAll('.user-name').forEach(el => el.textContent = name);
+                    document.getElementById('display-user-name').value = name;
+                    document.getElementById('display-user-email').value = email;
+                    document.querySelectorAll('.user-avatar').forEach(el => el.textContent = name.substring(0, 2));
+                    
+                    state.currentUser.name = name;
+                    state.currentUser.email = email;
+                } else if (response.status === 422) {
+                    const data = await response.json();
+                    const errors = data.errors || {};
+                    const firstError = Object.values(errors)[0][0];
+                    showNotification(firstError, 'error');
+                } else {
+                    showNotification('Failed to update profile. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        function submitChangePassword() {
+            const form = document.getElementById('changePasswordForm');
+            const formData = new FormData(form);
+            
+            showNotification('Updating password...', 'info');
+            
+            fetch('{{ route('password.update') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(async response => {
+                if (response.ok || response.status === 302) {
+                    showNotification('Password updated successfully!', 'success');
+                    closeModal('changePasswordModal');
+                    form.reset();
+                } else if (response.status === 422) {
+                    const data = await response.json();
+                    const errors = data.errors || {};
+                    const firstError = Object.values(errors)[0][0];
+                    showNotification(firstError, 'error');
+                } else {
+                    showNotification('Failed to update password. Please check your current password.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
         }
 
         function searchFullHistory(query) {
@@ -2231,7 +2351,6 @@
                 return;
             }
             
-            // Show loading
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center; padding: 3rem;">
@@ -2241,7 +2360,6 @@
                 </tr>
             `;
             
-            // Fetch from API
             fetch(`/user/history?search=${encodeURIComponent(query)}`, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -2301,7 +2419,6 @@
                 return;
             }
             
-            // Show loading
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center; padding: 3rem;">
@@ -2311,7 +2428,6 @@
                 </tr>
             `;
             
-            // Fetch from API with filter
             fetch(`/user/history?filter=${encodeURIComponent(filter)}`, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -2358,10 +2474,20 @@
 
         function updateEstimatedCost() {
             const duration = parseInt(document.getElementById('durationSelect').value);
-            const rate = 3.00;
+            const vehicleId = document.getElementById('vehicleSelect').value;
+            
+            if (!duration || !vehicleId) {
+                document.getElementById('estimatedCost').value = `₱0.00`;
+                return;
+            }
+            
+            const vehicleType = userVehiclesData[vehicleId]?.type || 'car';
+            const rate = parkingRatesData[vehicleType] || 3.00;
             const cost = (duration * rate).toFixed(2);
-            document.getElementById('estimatedCost').value = `$${cost}`;
+            document.getElementById('estimatedCost').value = `₱${cost}`;
         }
+
+        document.getElementById('vehicleSelect').addEventListener('change', updateEstimatedCost);
 
         function selectPaymentMethod(method) {
             state.selectedPaymentMethod = method;
@@ -2372,7 +2498,6 @@
             
             document.querySelector(`[data-method="${method}"]`).classList.add('selected');
             
-            // Show/hide card details
             document.getElementById('cardDetails').style.display = method === 'card' ? 'block' : 'none';
         }
 
@@ -2398,7 +2523,11 @@
 
             fetch('/user/book', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -2408,7 +2537,6 @@
                     closeModal('bookingModal');
                     refreshParkingGrid();
                     
-                    // Update user status
                     state.currentUser.status = 'parked';
                     state.currentUser.currentParking = data.parking_session.slot_number;
                     updateOverviewCards();
@@ -2465,7 +2593,6 @@
                     
                     showNotification('Parking session ended. Thank you!', 'success');
                     
-                    // Add to history
                     addToHistory();
                 }, 1500);
             }
@@ -2486,7 +2613,6 @@
         }
 
         function updateOverviewCards() {
-            // Update current parking card
             const parkingCard = document.querySelectorAll('.overview-card')[1];
             const status = parkingCard.querySelector('.parking-status');
             const value = parkingCard.querySelector('.overview-value');
@@ -2525,20 +2651,16 @@
             }, 1500);
         }
 
-        // Page Navigation
         function showPage(pageName) {
-            // Hide all pages
             document.querySelectorAll('.page-section').forEach(page => {
                 page.classList.add('hidden');
             });
             
-            // Show selected page
             const targetPage = document.getElementById(`page-${pageName}`);
             if (targetPage) {
                 targetPage.classList.remove('hidden');
             }
             
-            // Update navigation active state
             document.querySelectorAll('.nav-item').forEach(nav => {
                 nav.classList.remove('active');
                 if (nav.dataset.page === pageName) {
@@ -2546,18 +2668,15 @@
                 }
             });
             
-            // Close sidebar on mobile
             if (window.innerWidth <= 1024) {
                 document.getElementById('sidebar').classList.remove('active');
             }
             
-            // Page-specific initializations
             if (pageName === 'history') {
                 document.getElementById('fullHistorySearch').focus();
             }
         }
 
-        // Session Management
         function extendSession(sessionId) {
             showNotification('Extending parking session...', 'info');
             
@@ -2568,13 +2687,16 @@
             
             fetch('/user/extend', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     showNotification(data.message, 'success');
-                    // Refresh the page to show updated session
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     showNotification(data.message, 'error');
@@ -2599,13 +2721,16 @@
 
             fetch('/user/end', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showNotification(`Session ended! Final fee: $${data.final_fee}`, 'success');
-                    // Refresh the page to update
+                    showNotification(`Session ended! Final fee: ₱${data.final_fee}`, 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showNotification(data.message, 'error');
@@ -2617,8 +2742,10 @@
             });
         }
 
-        // Vehicle Management Functions
         function submitAddVehicle() {
+            const submitBtn = document.querySelector('#addVehicleForm button[type="submit"]');
+            const originalBtnContent = submitBtn.innerHTML;
+            
             const vehicleType = document.getElementById('vehicleType').value;
             const licensePlate = document.getElementById('licensePlate').value;
             const make = document.getElementById('vehicleMake').value;
@@ -2630,6 +2757,8 @@
                 return;
             }
 
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
             showNotification('Adding vehicle...', 'info');
 
             const formData = new FormData();
@@ -2642,39 +2771,43 @@
 
             fetch('/user/vehicles', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
             .then(response => response.json())
             .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+
                 if (data.success) {
                     showNotification('Vehicle added successfully!', 'success');
                     closeModal('addVehicleModal');
-                    // Reset form
                     document.getElementById('addVehicleForm').reset();
-                    // Dynamically add vehicle to UI
                     addVehicleToUI(data.vehicle);
                 } else {
                     showNotification(data.message || 'Failed to add vehicle', 'error');
                 }
             })
             .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
                 console.error('Error:', error);
                 showNotification('Failed to add vehicle. Please try again.', 'error');
             });
         }
 
         function addVehicleToUI(vehicle) {
-            // Add to vehicle select dropdown in booking modal
             const vehicleSelect = document.getElementById('vehicleSelect');
             const option = document.createElement('option');
             option.value = vehicle.id;
             option.textContent = `${vehicle.license_plate} - ${vehicle.make || ''} ${vehicle.model || ''}`;
             vehicleSelect.appendChild(option);
 
-            // Add to vehicles page grid
             const vehiclesGrid = document.getElementById('vehiclesGrid');
             if (vehiclesGrid) {
-                // Remove empty state message if it exists
                 const noVehiclesMessage = document.getElementById('noVehiclesMessage');
                 if (noVehiclesMessage) {
                     noVehiclesMessage.remove();
@@ -2682,7 +2815,7 @@
 
                 const vehicleCard = document.createElement('div');
                 vehicleCard.className = 'overview-card';
-                vehicleCard.style.animation = 'fadeIn 0.3s ease-out';
+                vehicleCard.style.animation = 'fadeInUp 0.5s ease-out forwards';
                 vehicleCard.innerHTML = `
                     <div class="overview-header">
                         <div>
@@ -2697,25 +2830,26 @@
                         </div>
                     </div>
                     <div class="overview-value">${vehicle.make || ''} ${vehicle.model || ''}</div>
-                    <div class="overview-label">Color: ${vehicle.color || 'N/A'} | Type: ${vehicle.type || 'N/A'}</div>
+                    <div class="overview-label">Color: ${vehicle.color || 'N/A'}</div>
                 `;
-                vehiclesGrid.appendChild(vehicleCard);
+                vehiclesGrid.prepend(vehicleCard);
             }
 
-            // If this was the first vehicle, show welcome message
-            if (vehicleSelect.options.length === 2) { // Only default option + new vehicle
+            const overviewCount = document.getElementById('overview-vehicle-count');
+            if (overviewCount) {
+                overviewCount.textContent = parseInt(overviewCount.textContent) + 1;
+            }
+
+            if (vehicleSelect.options.length === 2) { 
                 showNotification('You can now book parking slots with your new vehicle!', 'success');
             }
         }
 
-        // Payment Management Functions
         function togglePaymentFields(type, cardFieldsId, ewalletFieldsId, bankFieldsId) {
-            // Hide all field sections first
             if (cardFieldsId) document.getElementById(cardFieldsId).style.display = 'none';
             if (ewalletFieldsId) document.getElementById(ewalletFieldsId).style.display = 'none';
             if (bankFieldsId) document.getElementById(bankFieldsId).style.display = 'none';
 
-            // Show selected type fields
             switch(type) {
                 case 'card':
                     if (cardFieldsId) document.getElementById(cardFieldsId).style.display = 'block';
@@ -2737,7 +2871,6 @@
                 return;
             }
 
-            // Validate fields based on type
             let isValid = true;
             let paymentData = { type: paymentType };
 
@@ -2783,7 +2916,11 @@
 
             fetch('/user/payments', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -2791,7 +2928,6 @@
                     showNotification('Payment method added successfully!', 'success');
                     closeModal('addPaymentModal');
                     document.getElementById('addPaymentForm').reset();
-                    // Hide all field sections
                     document.getElementById('cardPaymentFields').style.display = 'none';
                     document.getElementById('ewalletFields').style.display = 'none';
                     document.getElementById('bankFields').style.display = 'none';
@@ -2850,14 +2986,17 @@
 
             fetch('/user/payments', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     showNotification('Payment method added successfully! You can now book parking slots.', 'success');
                     closeModal('firstPaymentSetupModal');
-                    // Refresh page to update state
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showNotification(data.message || 'Failed to add payment method', 'error');
@@ -2870,15 +3009,9 @@
         }
 
         function checkFirstTimeUser() {
-            // Check if user has any payment methods
-            // For now, we'll check if they have any vehicles as an indicator
-            // In a real app, you'd check for stored payment methods
             const hasVehicles = {{ $userVehicles->count() > 0 ? 'true' : 'false' }};
 
-            // If user has no vehicles, they might be new - prompt for payment setup
-            // You can adjust this logic based on your actual user data
             if (!hasVehicles) {
-                // Show first payment setup after a short delay
                 setTimeout(() => {
                     openModal('firstPaymentSetupModal');
                 }, 1000);
@@ -2886,12 +3019,10 @@
         }
 
         function handleSearch(query) {
-            // Implement search functionality
             console.log('Searching for:', query);
         }
 
         function filterHistory(filter) {
-            // Implement history filtering
             console.log('Filtering history:', filter);
         }
 
@@ -2903,7 +3034,6 @@
                 return;
             }
             
-            // Show loading state
             const tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = `
                 <tr>
@@ -2914,7 +3044,6 @@
                 </tr>
             `;
             
-            // Fetch history from API with search query
             fetch(`/user/history?search=${encodeURIComponent(query)}`, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -2928,7 +3057,7 @@
                         slot: log.parking_slot.slot_number,
                         duration: calculateDuration(log.entry_time, log.exit_time),
                         vehicle: log.vehicle.license_plate,
-                        amount: `$${parseFloat(log.total_fee).toFixed(2)}`,
+                        amount: `₱${parseFloat(log.total_fee).toFixed(2)}`,
                         status: log.status
                     }));
                     state.historyLoaded = true;
@@ -3011,7 +3140,6 @@
             
             container.appendChild(notification);
             
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 notification.remove();
             }, 5000);
@@ -3021,7 +3149,6 @@
             if (confirm('Are you sure you want to logout?')) {
                 showNotification('Logging out...', 'info');
                 
-                // Create form for logout
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/logout';
@@ -3037,14 +3164,12 @@
             }
         }
 
-        // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal')) {
                 e.target.classList.remove('active');
             }
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal.active').forEach(modal => {
@@ -3052,6 +3177,19 @@
                 });
             }
         });
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
     </script>
 </body>
 </html>

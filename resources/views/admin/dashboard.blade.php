@@ -1,7 +1,6 @@
 @extends('layouts.modern-admin')
 
 @section('content')
-<!-- Welcome Message -->
 <div class="overview-card" style="margin-bottom: 2rem;">
     <div class="overview-header">
         <div>
@@ -14,7 +13,6 @@
     </div>
 </div>
 
-<!-- Overview Statistics -->
 <section class="overview-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
     <div class="overview-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
@@ -52,9 +50,20 @@
             </div>
         </div>
     </div>
+    <div class="overview-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
+        <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Total Earnings</div>
+                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">₱{{ number_format($totalEarnings, 2) }}</div>
+                <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Revenue from parking fees</div>
+            </div>
+            <div class="overview-icon icon-primary" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
 </section>
 
-<!-- Management Quick Access -->
 <section class="management-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
     <a href="{{ route('admin.slots') }}" class="management-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-primary); border: 1px solid transparent;">
         <div class="management-icon" style="width: 56px; height: 56px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
@@ -79,7 +88,6 @@
     </a>
 </section>
 
-<!-- Recent Activity -->
 <section class="activity-section" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
     <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 class="section-title" style="font-size: 1.5rem; font-weight: 700;">Recent Activity</h2>

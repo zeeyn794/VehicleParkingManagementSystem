@@ -12,7 +12,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
-        /* CSS Variables for Design System - ParkMaster Theme */
         :root {
             --primary-color: #f53003;
             --primary-dark: #d42a02;
@@ -35,7 +34,6 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Dark Mode Variables - ParkMaster Theme */
         [data-theme="dark"] {
             --light-bg: #0a0a0a;
             --light-surface: #1C1C1A;
@@ -46,7 +44,6 @@
             --border-color: #3E3E3A;
         }
 
-        /* Base Styles - ParkMaster Theme */
         * {
             margin: 0;
             padding: 0;
@@ -61,13 +58,11 @@
             transition: var(--transition);
         }
 
-        /* Layout Container */
         .dashboard-container {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar Navigation */
         .sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.8);
@@ -211,7 +206,6 @@
             background: #dc2626;
         }
 
-        /* Main Content Area */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -222,7 +216,6 @@
             margin-left: 80px;
         }
 
-        /* Header - ParkMaster Theme */
         .header {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
@@ -344,12 +337,10 @@
             color: var(--text-secondary);
         }
 
-        /* Dashboard Content */
         .dashboard-content {
             padding: 2rem;
         }
 
-        /* Responsive Design */
         @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -372,11 +363,10 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <i class="fas fa-parking"></i>
+                    <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 32px; height: 32px; object-fit: cover; border-radius: 6px;">
                     <span class="logo-text"><span>Park</span>Master</span>
                 </div>
             </div>
@@ -393,9 +383,17 @@
                     <i class="fas fa-car"></i>
                     <span class="nav-text">Slot Management</span>
                 </a>
+                <a href="{{ route('admin.rates') }}" class="nav-item {{ request()->routeIs('admin.rates') ? 'active' : '' }}">
+                    <i class="fas fa-tags"></i>
+                    <span class="nav-text">Rate Management</span>
+                </a>
                 <a href="{{ route('admin.logs') }}" class="nav-item {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
                     <i class="fas fa-history"></i>
                     <span class="nav-text">Parking Logs</span>
+                </a>
+                <a href="{{ route('admin.earnings') }}" class="nav-item {{ request()->routeIs('admin.earnings') ? 'active' : '' }}">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span class="nav-text">Total Earnings</span>
                 </a>
                 <a href="{{ route('admin.users') }}" class="nav-item {{ request()->routeIs('admin.users') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
@@ -413,14 +411,15 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
+                    <div class="header-logo lg:hidden">
+                        <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 30px; height: 30px; object-fit: cover; border-radius: 6px;">
+                    </div>
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
                         <input type="text" placeholder="Search admin functions..." id="searchInput">
@@ -443,7 +442,6 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
             <div class="dashboard-content">
                 @yield('content')
             </div>
@@ -470,7 +468,6 @@
             document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         }
 
-        // Show toast notifications from session
         @if(session('success'))
             Toastify({
                 text: "{{ session('success') }}",
