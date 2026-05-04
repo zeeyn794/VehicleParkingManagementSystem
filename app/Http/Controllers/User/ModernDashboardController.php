@@ -79,7 +79,11 @@ class ModernDashboardController extends Controller
 
         $slot = ParkingSlot::findOrFail($request->slot_id);
 
-        if ($slot->status !== 'available') {
+        $isOccupied = ParkingLog::where('parking_slot_id', $slot->id)
+            ->where('exit_time', '>', now())
+            ->exists();
+
+        if ($isOccupied) {
             return response()->json([
                 'success' => false,
                 'message' => 'Slot is not available.'
@@ -95,11 +99,12 @@ class ModernDashboardController extends Controller
         $durationHours = (int) $request->duration_hours;
         $exitTime = $entryTime->copy()->addHours($durationHours);
         
-        $rate = \App\Models\ParkingRate::where('vehicle_type', $vehicle->type)
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $vehicle->type ?? 'car')
             ->where('is_active', true)
-            ->first();
+            ->first()
+            ?? \App\Models\ParkingRate::where('is_active', true)->first();
             
-        $hourlyRate = $rate ? $rate->hourly_rate : 3.00; 
+        $hourlyRate = $rate ? $rate->hourly_rate : 50.00; // safe fallback matching 'car' rate
         $totalFee = $hourlyRate * $durationHours;
 
         $parkingLog = ParkingLog::create([
@@ -146,11 +151,12 @@ class ModernDashboardController extends Controller
 
         $additionalHours = (int) $request->additional_hours;
         
-        $rate = \App\Models\ParkingRate::where('vehicle_type', $session->vehicle->type)
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $session->vehicle->type ?? 'car')
             ->where('is_active', true)
-            ->first();
+            ->first()
+            ?? \App\Models\ParkingRate::where('is_active', true)->first();
             
-        $hourlyRate = $rate ? $rate->hourly_rate : 3.00; 
+        $hourlyRate = $rate ? $rate->hourly_rate : 50.00;
         $additionalFee = $hourlyRate * $additionalHours;
 
         $session->exit_time = $session->exit_time->addHours($additionalHours);
@@ -183,8 +189,14 @@ class ModernDashboardController extends Controller
         }
 
         $actualDuration = now()->diffInMinutes($session->entry_time);
-        $actualHours = ceil($actualDuration / 60);
-        $actualFee = $session->parkingSlot->hourly_rate * $actualHours;
+        $actualHours = max(1, ceil($actualDuration / 60));
+        
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $session->vehicle->type ?? 'car')
+            ->where('is_active', true)
+            ->first()
+            ?? \App\Models\ParkingRate::where('is_active', true)->first();
+        $hourlyRate = $rate ? $rate->hourly_rate : 50.00;
+        $actualFee = $hourlyRate * $actualHours;
 
         $session->exit_time = now();
         $session->total_fee = $actualFee;
@@ -203,13 +215,16 @@ class ModernDashboardController extends Controller
     public function getParkingSlots()
     {
         $slots = ParkingSlot::all()->map(function ($slot) {
+            $isOccupied = ParkingLog::where('parking_slot_id', $slot->id)
+                ->where('exit_time', '>', now())
+                ->exists();
+
             return [
-                'id' => $slot->id,
+                'id'          => $slot->id,
                 'slot_number' => $slot->slot_number,
-                'location' => $slot->location,
-                'status' => $slot->status,
-                'type' => $slot->type ?? 'Standard',
-                'hourly_rate' => $slot->hourly_rate
+                'location'    => $slot->location,
+                'status'      => $isOccupied ? 'occupied' : 'available',
+                'type'        => $slot->type ?? 'Standard',
             ];
         });
 

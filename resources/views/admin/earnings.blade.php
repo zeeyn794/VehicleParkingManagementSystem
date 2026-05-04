@@ -60,7 +60,7 @@
         <div class="flex gap-2">
             <form action="{{ route('admin.earnings') }}" method="GET" style="display: flex; gap: 0.5rem;">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search transactions..." style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 0.125rem; font-size: 0.875rem; background: var(--light-bg); color: var(--text-primary);">
-                <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--border-color); width: auto;">Search</button>
+                <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: white; border: 1px solid var(--border-color); color: #000000; font-weight: 600; width: auto;">Search</button>
             </form>
             <button class="btn btn-primary" onclick="exportEarnings()" style="padding: 0.5rem 1rem; font-size: 0.875rem; width: auto;">
                 <i class="fas fa-download"></i> Export
@@ -77,6 +77,7 @@
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">User</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Slot</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Vehicle</th>
+                    <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Type</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600; text-align: right;">Amount Collected</th>
                 </tr>
             </thead>
@@ -90,11 +91,12 @@
                     </td>
                     <td style="padding: 1rem; font-weight: 600;">{{ $transaction->parkingSlot->slot_number ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $transaction->vehicle->license_plate ?? 'N/A' }}</td>
+                    <td style="padding: 1rem; color: var(--text-secondary);"><span style="text-transform: capitalize;">{{ $transaction->vehicle->type ?? 'Car' }}</span></td>
                     <td style="padding: 1rem; color: var(--success-color); font-weight: 700; text-align: right;">₱{{ number_format($transaction->total_fee, 2) }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                    <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
                         <i class="fas fa-receipt" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         No revenue transactions found matching your criteria.
                     </td>
@@ -113,8 +115,11 @@
 @section('extra-js')
 <script>
     function exportEarnings() {
+        const search = document.querySelector('input[name="search"]').value;
+        const url = `{{ route('admin.earnings.export') }}?search=${encodeURIComponent(search)}`;
+        
         Toastify({
-            text: "Exporting earnings report to CSV...",
+            text: "Generating earnings report...",
             duration: 3000,
             close: true,
             gravity: "top",
@@ -122,16 +127,7 @@
             backgroundColor: "var(--primary-color)",
         }).showToast();
         
-        setTimeout(() => {
-            Toastify({
-                text: "Export complete!",
-                duration: 2000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "var(--success-color)",
-            }).showToast();
-        }, 2000);
+        window.location.href = url;
     }
 </script>
 @endsection

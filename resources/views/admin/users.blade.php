@@ -16,9 +16,10 @@
 <div class="activity-section" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
     <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h3 style="font-size: 1.25rem; font-weight: 700;">System Users</h3>
-        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-            <i class="fas fa-user-plus"></i> Create User
-        </button>
+        <form action="{{ route('admin.users') }}" method="GET" style="display: flex; gap: 0.5rem;">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search users..." style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 0.125rem; font-size: 0.875rem; background: var(--light-bg); color: var(--text-primary);">
+            <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: white; border: 1px solid var(--border-color); color: #000000; font-weight: 600; width: auto;">Search</button>
+        </form>
     </div>
     
     <div style="overflow-x: auto;">
@@ -36,12 +37,7 @@
                 @foreach($users as $user)
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 1rem;">
-                        <div class="flex items-center gap-2">
-                            <div style="width: 32px; height: 32px; background: rgba(245, 48, 3, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: bold; color: var(--primary-color);">
-                                {{ strtoupper(substr($user->name, 0, 1)) }}
-                            </div>
-                            <span style="font-weight: 600;">{{ $user->name }}</span>
-                        </div>
+                        <span style="font-weight: 600;">{{ $user->name }}</span>
                     </td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $user->email }}</td>
                     <td style="padding: 1rem;">

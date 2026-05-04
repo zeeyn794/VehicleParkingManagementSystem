@@ -289,6 +289,94 @@
             transition: var(--transition);
         }
 
+        .notification-btn:hover {
+            background: rgba(245, 48, 3, 0.1);
+            color: var(--primary-color);
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 70px;
+            right: 80px;
+            width: 320px;
+            background: var(--light-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 0.125rem;
+            box-shadow: var(--shadow-xl);
+            display: none;
+            z-index: 1001;
+            overflow: hidden;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .notification-dropdown.active {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(245, 48, 3, 0.02);
+        }
+
+        .notification-header h4 {
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: rgba(245, 48, 3, 0.05);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .theme-toggle {
             background: none;
             border: none;
@@ -375,10 +463,6 @@
                     <i class="fas fa-home"></i>
                     <span class="nav-text">Admin Dashboard</span>
                 </a>
-                <a href="{{ route('admin.occupancy') }}" class="nav-item {{ request()->routeIs('admin.occupancy') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span class="nav-text">Occupancy Overview</span>
-                </a>
                 <a href="{{ route('admin.slots') }}" class="nav-item {{ request()->routeIs('admin.slots') ? 'active' : '' }}">
                     <i class="fas fa-car"></i>
                     <span class="nav-text">Slot Management</span>
@@ -398,6 +482,10 @@
                 <a href="{{ route('admin.users') }}" class="nav-item {{ request()->routeIs('admin.users') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
                     <span class="nav-text">User Management</span>
+                </a>
+                <a href="{{ route('admin.profile') }}" class="nav-item {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
+                    <i class="fas fa-user-cog"></i>
+                    <span class="nav-text">Admin Profile</span>
                 </a>
             </nav>
             <div class="sidebar-footer">
@@ -420,15 +508,41 @@
                     <div class="header-logo lg:hidden">
                         <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 30px; height: 30px; object-fit: cover; border-radius: 6px;">
                     </div>
-                    <div class="search-bar">
+                    <form action="{{ route('admin.logs') }}" method="GET" class="search-bar">
                         <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search admin functions..." id="searchInput">
-                    </div>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search everywhere..." id="searchInput">
+                    </form>
                 </div>
                 <div class="header-right">
-                    <button class="notification-btn">
+                    <button class="notification-btn" onclick="toggleNotifications(event)">
                         <i class="fas fa-bell"></i>
+                        <span style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; border: 2px solid var(--light-surface);"></span>
                     </button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-header">
+                            <h4>Notifications</h4>
+                        </div>
+                        <div class="notification-list">
+                            @forelse($recentNotifications as $notif)
+                            <div class="notification-item">
+                                <div class="notification-icon" style="background: {{ $notif['bg'] }}; color: {{ $notif['color'] }};">
+                                    <i class="{{ $notif['icon'] }}"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">{{ $notif['title'] }}</div>
+                                    <div class="notification-time">{{ $notif['time']->diffForHumans() }}</div>
+                                </div>
+                            </div>
+                            @empty
+                            <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                                <p style="font-size: 0.8125rem;">No recent notifications</p>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                            <a href="{{ route('admin.notifications') }}" style="font-size: 0.8125rem; color: var(--text-secondary); text-decoration: none; font-weight: 600;">View All Activity</a>
+                        </div>
+                    </div>
                     <button class="theme-toggle" onclick="toggleTheme()">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
@@ -460,6 +574,18 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
+        }
+
+        function toggleNotifications(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('active');
+            
+            document.onclick = function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            };
         }
 
         const savedTheme = localStorage.getItem('theme') || 'light';

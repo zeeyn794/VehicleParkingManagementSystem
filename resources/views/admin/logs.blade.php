@@ -19,7 +19,7 @@
         <div class="flex gap-2">
             <form action="{{ route('admin.logs') }}" method="GET" style="display: flex; gap: 0.5rem;">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search logs..." style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 0.125rem; font-size: 0.875rem; background: var(--light-bg); color: var(--text-primary);">
-                <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--border-color); width: auto;">Search</button>
+                <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: white; border: 1px solid var(--border-color); color: #000000; font-weight: 600; width: auto;">Search</button>
             </form>
             <button class="btn btn-primary" onclick="exportLogs()" style="padding: 0.5rem 1rem; font-size: 0.875rem; width: auto;">
                 <i class="fas fa-download"></i> Export
@@ -34,6 +34,7 @@
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">User</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Slot</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Vehicle</th>
+                    <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Type</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Entry Time</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Exit Time</th>
                     <th style="padding: 1rem; color: var(--text-secondary); font-weight: 600;">Total Fee</th>
@@ -43,22 +44,18 @@
                 @forelse($logs as $log)
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 1rem;">
-                        <div class="flex items-center gap-2">
-                            <div style="width: 24px; height: 24px; background: rgba(245, 48, 3, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; color: var(--primary-color);">
-                                {{ strtoupper(substr($log->user->name ?? 'U', 0, 1)) }}
-                            </div>
-                            <span style="font-weight: 500;">{{ $log->user->name ?? 'Unknown User' }}</span>
-                        </div>
+                        <span style="font-weight: 500;">{{ $log->user->name ?? 'Unknown User' }}</span>
                     </td>
                     <td style="padding: 1rem; font-weight: 600;">{{ $log->parkingSlot->slot_number ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->vehicle->license_plate ?? 'N/A' }}</td>
+                    <td style="padding: 1rem; color: var(--text-secondary);"><span style="text-transform: capitalize;">{{ $log->vehicle->type ?? 'Car' }}</span></td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->entry_time ? \Carbon\Carbon::parse($log->entry_time)->format('M d, H:i') : '-' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->exit_time ? \Carbon\Carbon::parse($log->exit_time)->format('M d, H:i') : '-' }}</td>
                     <td style="padding: 1rem; color: var(--primary-color); font-weight: 700;">₱{{ number_format($log->total_fee, 2) }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                    <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
                         <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         No parking logs found matching your criteria.
                     </td>
@@ -77,8 +74,11 @@
 @section('extra-js')
 <script>
     function exportLogs() {
+        const search = document.querySelector('input[name="search"]').value;
+        const url = `{{ route('admin.logs.export') }}?search=${encodeURIComponent(search)}`;
+        
         Toastify({
-            text: "Exporting logs to CSV...",
+            text: "Preparing your CSV export...",
             duration: 3000,
             close: true,
             gravity: "top",
@@ -86,16 +86,7 @@
             backgroundColor: "var(--primary-color)",
         }).showToast();
         
-        setTimeout(() => {
-            Toastify({
-                text: "Export complete!",
-                duration: 2000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "var(--success-color)",
-            }).showToast();
-        }, 2000);
+        window.location.href = url;
     }
 </script>
 @endsection

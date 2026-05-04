@@ -16,9 +16,15 @@
 <div class="activity-section" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
     <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h3 style="font-size: 1.25rem; font-weight: 700;">Parking Slots List</h3>
-        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-            <i class="fas fa-plus"></i> Add New Slot
-        </button>
+        <div class="flex gap-2">
+            <form action="{{ route('admin.slots') }}" method="GET" style="display: flex; gap: 0.5rem;">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search slots..." style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 0.125rem; font-size: 0.875rem; background: var(--light-bg); color: var(--text-primary);">
+                <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: white; border: 1px solid var(--border-color); color: #000000; font-weight: 600; width: auto;">Search</button>
+            </form>
+            <button class="btn btn-primary" onclick="openModal()" style="padding: 0.5rem 1rem; font-size: 0.875rem; width: auto;">
+                <i class="fas fa-plus"></i> Add New Slot
+            </button>
+        </div>
     </div>
     
     <div style="overflow-x: auto;">
@@ -41,15 +47,15 @@
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $slot->type ?? 'Standard' }}</td>
                     <td style="padding: 1rem;">
                         <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; 
-                            background: {{ $slot->status === 'available' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }};
-                            color: {{ $slot->status === 'available' ? 'var(--success-color)' : 'var(--danger-color)' }};">
-                            {{ ucfirst($slot->status) }}
+                            background: {{ $slot->display_status === 'available' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }};
+                            color: {{ $slot->display_status === 'available' ? 'var(--success-color)' : 'var(--danger-color)' }};">
+                            {{ ucfirst($slot->display_status) }}
                         </span>
                     </td>
 
                     <td style="padding: 1rem;">
                         <div style="display: flex; gap: 0.5rem;">
-                            <button type="button" onclick="openEditModal({{ $slot->id }}, '{{ $slot->slot_number }}', '{{ $slot->location }}', '{{ $slot->type }}', '{{ $slot->status }}')" style="background: none; border: none; color: var(--primary-color); cursor: pointer;"><i class="fas fa-edit"></i></button>
+                            <button type="button" onclick="openEditModal({{ $slot->id }}, '{{ $slot->slot_number }}', '{{ $slot->location }}', '{{ $slot->type }}', '{{ $slot->display_status }}')" style="background: none; border: none; color: var(--primary-color); cursor: pointer;"><i class="fas fa-edit"></i></button>
                             <form action="{{ route('admin.slots.destroy', $slot->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this slot?');">
                                 @csrf
                                 @method('DELETE')

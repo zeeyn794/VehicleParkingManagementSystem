@@ -2083,8 +2083,41 @@
         }
 
         function loadHistoryData() {
-            state.history = [];
-            renderHistoryTable();
+            fetchFullHistory({});
+        }
+
+        function fetchFullHistory({ search = '', filter = '' } = {}) {
+            const tbody = document.getElementById('fullHistoryTableBody');
+            const histTbody = document.getElementById('historyTableBody');
+
+            const loadingRow = `<tr><td colspan="8" style="text-align:center;padding:2rem;"><div class="loading" style="margin:0 auto"></div><p style="margin-top:1rem;color:var(--text-secondary)">Loading history...</p></td></tr>`;
+            if (tbody) tbody.innerHTML = loadingRow;
+            if (histTbody) histTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;"><div class="loading" style="margin:0 auto"></div></td></tr>`;
+
+            let url = '/user/history/json?';
+            if (search) url += `search=${encodeURIComponent(search)}&`;
+            if (filter) url += `filter=${encodeURIComponent(filter)}&`;
+
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    state.history = data.history;
+                    state.historyLoaded = true;
+                    renderHistoryTable();
+                    renderFullHistoryTable(data.history);
+                } else {
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--danger-color)">Failed to load history.</td></tr>`;
+                }
+            })
+            .catch(() => {
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--danger-color)">Error loading history.</td></tr>`;
+            });
         }
 
         function renderHistoryTable() {
@@ -2095,15 +2128,15 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                        <p>Enter a search term or select a filter to view your parking history</p>
+                        <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        <p>No parking history found</p>
                     </td>
                 `;
                 tbody.appendChild(row);
                 return;
             }
 
-            state.history.forEach(record => {
+            state.history.slice(0, 5).forEach(record => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${record.date}</td>
@@ -2111,7 +2144,33 @@
                     <td>${record.duration}</td>
                     <td>${record.vehicle}</td>
                     <td>${record.amount}</td>
-                    <td><span class="parking-status status-completed">${record.status}</span></td>
+                    <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${record.status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderFullHistoryTable(history) {
+            const tbody = document.getElementById('fullHistoryTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (!history || history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text-secondary)"><i class="fas fa-history" style="font-size:2rem;margin-bottom:1rem;display:block"></i><p>No parking history found</p></td></tr>`;
+                return;
+            }
+
+            history.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.date}</td>
+                    <td>${log.slot}</td>
+                    <td>${log.vehicle}</td>
+                    <td>${log.entry_time || 'N/A'}</td>
+                    <td>${log.exit_time || 'N/A'}</td>
+                    <td>${log.duration}</td>
+                    <td>${log.amount}</td>
+                    <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${log.status}</span></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -2337,139 +2396,11 @@
         }
 
         function searchFullHistory(query) {
-            const tbody = document.getElementById('fullHistoryTableBody');
-            
-            if (!query || query.trim() === '') {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                            <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                            <p>Enter a search term or select a filter to view your full parking history</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 3rem;">
-                        <div class="loading"></div>
-                        <p style="margin-top: 1rem; color: var(--text-secondary);">Searching...</p>
-                    </td>
-                </tr>
-            `;
-            
-            fetch(`/user/history?search=${encodeURIComponent(query)}`, {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.history.length > 0) {
-                    tbody.innerHTML = '';
-                    data.history.forEach(log => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${log.date}</td>
-                            <td>${log.slot}</td>
-                            <td>${log.vehicle}</td>
-                            <td>${log.entry_time || 'N/A'}</td>
-                            <td>${log.exit_time || 'N/A'}</td>
-                            <td>${log.duration}</td>
-                            <td>${log.amount}</td>
-                            <td><span class="parking-status status-completed">${log.status}</span></td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                } else {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                                <p>No results found for "${query}"</p>
-                            </td>
-                        </tr>
-                    `;
-                }
-            })
-            .catch(error => {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--danger-color);">
-                            <p>Error loading history</p>
-                        </td>
-                    </tr>
-                `;
-            });
+            fetchFullHistory({ search: query, filter: document.getElementById('fullHistoryFilter')?.value || '' });
         }
 
         function filterFullHistory(filter) {
-            const tbody = document.getElementById('fullHistoryTableBody');
-            
-            if (!filter) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                            <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                            <p>Enter a search term or select a filter to view your full parking history</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 3rem;">
-                        <div class="loading"></div>
-                        <p style="margin-top: 1rem; color: var(--text-secondary);">Loading...</p>
-                    </td>
-                </tr>
-            `;
-            
-            fetch(`/user/history?filter=${encodeURIComponent(filter)}`, {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.history.length > 0) {
-                    tbody.innerHTML = '';
-                    data.history.forEach(log => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${log.date}</td>
-                            <td>${log.slot}</td>
-                            <td>${log.vehicle}</td>
-                            <td>${log.entry_time || 'N/A'}</td>
-                            <td>${log.exit_time || 'N/A'}</td>
-                            <td>${log.duration}</td>
-                            <td>${log.amount}</td>
-                            <td><span class="parking-status status-completed">${log.status}</span></td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                } else {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                                <p>No parking history for selected period</p>
-                            </td>
-                        </tr>
-                    `;
-                }
-            })
-            .catch(error => {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--danger-color);">
-                            <p>Error loading history</p>
-                        </td>
-                    </tr>
-                `;
-            });
+            fetchFullHistory({ filter, search: document.getElementById('fullHistorySearch')?.value || '' });
         }
 
         function updateEstimatedCost() {

@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(fu
     Route::post('/end', [ModernDashboardController::class, 'endParking'])->name('end');
     Route::get('/slots', [ModernDashboardController::class, 'getParkingSlots'])->name('slots');
     Route::get('/history', [ModernDashboardController::class, 'historyPage'])->name('history');
+    Route::get('/history/json', [ModernDashboardController::class, 'getParkingHistory'])->name('history.json');
     Route::post('/vehicles', [ModernDashboardController::class, 'addVehicle'])->name('vehicles.add');
     Route::post('/payments', [ModernDashboardController::class, 'addPaymentMethod'])->name('payments.add');
     Route::view('/parking', 'user.parking')->name('parking');
@@ -37,11 +38,15 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/occupancy', [\App\Http\Controllers\Admin\DashboardController::class, 'occupancy'])->name('occupancy');
     Route::get('/slots', [\App\Http\Controllers\Admin\DashboardController::class, 'slots'])->name('slots');
     Route::get('/logs', [\App\Http\Controllers\Admin\DashboardController::class, 'logs'])->name('logs');
+    Route::get('/logs/export', [\App\Http\Controllers\Admin\DashboardController::class, 'exportLogs'])->name('logs.export');
     Route::get('/earnings', [\App\Http\Controllers\Admin\DashboardController::class, 'earnings'])->name('earnings');
+    Route::get('/earnings/export', [\App\Http\Controllers\Admin\DashboardController::class, 'exportEarnings'])->name('earnings.export');
+    Route::get('/notifications', [\App\Http\Controllers\Admin\DashboardController::class, 'notifications'])->name('notifications');
     Route::get('/users', [\App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users');
+    Route::get('/profile', [\App\Http\Controllers\Admin\DashboardController::class, 'profile'])->name('profile');
+    Route::patch('/profile', [\App\Http\Controllers\Admin\DashboardController::class, 'updateProfile'])->name('profile.update');
     Route::post('/slots', [\App\Http\Controllers\Admin\DashboardController::class, 'storeSlot'])->name('slots.store');
     Route::patch('/slots/{id}', [\App\Http\Controllers\Admin\DashboardController::class, 'updateSlot'])->name('slots.update');
     Route::delete('/slots/{id}', [\App\Http\Controllers\Admin\DashboardController::class, 'destroySlot'])->name('slots.destroy');
