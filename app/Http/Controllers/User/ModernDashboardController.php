@@ -20,7 +20,15 @@ class ModernDashboardController extends Controller
         $activeSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->where('exit_time', '>', now())
             ->with('parkingSlot', 'vehicle')
-            ->get() : collect();
+            ->get()
+            ->map(function($session) {
+                $type = strtolower($session->vehicle->type ?? 'car');
+                $rate = \App\Models\ParkingRate::where('vehicle_type', $type)
+                    ->where('is_active', true)
+                    ->first();
+                $session->hourly_rate = $rate ? (float)$rate->hourly_rate : (float)($session->parkingSlot->hourly_rate ?? 50.00);
+                return $session;
+            }) : collect();
 
         $userVehicles = $user ? $user->vehicles()->latest()->get() : collect();
 
@@ -53,7 +61,12 @@ class ModernDashboardController extends Controller
         $totalSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->count() : 0;
 
-        $parkingRates = ParkingRate::where('is_active', true)->get();
+        $parkingRates = ParkingRate::where('is_active', true)->get()->mapWithKeys(function($item) {
+            return [strtolower($item->vehicle_type) => $item->hourly_rate];
+        });
+        
+        $recentNotifications = $this->getLatestNotifications(5);
+        $allNotificationsCount = $recentNotifications->count(); // In a real app, this would be unread count
 
         return view('dashboard', compact(
             'user',
@@ -64,7 +77,9 @@ class ModernDashboardController extends Controller
             'parkingHistory',
             'totalSpent',
             'totalSessions',
-            'parkingRates'
+            'parkingRates',
+            'recentNotifications',
+            'allNotificationsCount'
         ));
     }
 
@@ -99,12 +114,12 @@ class ModernDashboardController extends Controller
         $durationHours = (int) $request->duration_hours;
         $exitTime = $entryTime->copy()->addHours($durationHours);
         
-        $rate = \App\Models\ParkingRate::where('vehicle_type', $vehicle->type ?? 'car')
+        $type = strtolower($vehicle->type ?? 'car');
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $type)
             ->where('is_active', true)
-            ->first()
-            ?? \App\Models\ParkingRate::where('is_active', true)->first();
+            ->first();
             
-        $hourlyRate = $rate ? $rate->hourly_rate : 50.00; // safe fallback matching 'car' rate
+        $hourlyRate = $rate ? (float)$rate->hourly_rate : (float)($slot->hourly_rate ?? 50.00); 
         $totalFee = $hourlyRate * $durationHours;
 
         $parkingLog = ParkingLog::create([
@@ -114,6 +129,7 @@ class ModernDashboardController extends Controller
             'entry_time'      => $entryTime,
             'exit_time'       => $exitTime,
             'total_fee'       => $totalFee,
+            'payment_method'  => $request->payment_method ?? 'cash',
         ]);
 
         $slot->update(['status' => 'occupied']);
@@ -124,10 +140,14 @@ class ModernDashboardController extends Controller
             'parking_session' => [
                 'id' => $parkingLog->id,
                 'slot_number' => $slot->slot_number,
+                'vehicle_id' => $vehicle->id,
+                'vehicle_type' => $vehicle->type,
+                'license_plate' => $vehicle->license_plate,
                 'vehicle' => $vehicle->license_plate,
-                'entry_time' => $entryTime->format('H:i'),
-                'exit_time' => $exitTime->format('H:i'),
-                'total_fee' => $totalFee
+                'entry_time' => $entryTime->toIso8601String(),
+                'exit_time' => $exitTime->toIso8601String(),
+                'total_fee' => $totalFee,
+                'hourly_rate' => $rate ? (float)$rate->hourly_rate : 50.00
             ]
         ]);
     }
@@ -234,6 +254,71 @@ class ModernDashboardController extends Controller
         ]);
     }
 
+    public function exportHistory(Request $request)
+    {
+        $user = auth()->user();
+        
+        $query = ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
+            ->with(['parkingSlot', 'vehicle']);
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('vehicle', function ($subQuery) use ($search) {
+                    $subQuery->where('license_plate', 'like', "%{$search}%");
+                })->orWhereHas('parkingSlot', function ($subQuery) use ($search) {
+                    $subQuery->where('slot_number', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        if ($request->has('filter')) {
+            switch ($request->filter) {
+                case 'today': $query->whereDate('created_at', today()); break;
+                case 'week': $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]); break;
+                case 'month': $query->whereMonth('created_at', now()->month); break;
+            }
+        }
+
+        $logs = $query->orderBy('created_at', 'desc')->get();
+        $filename = "my_parking_history_" . date('Y-m-d') . ".csv";
+        
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($logs) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            fputcsv($file, ['Date', 'Slot', 'Vehicle', 'Type', 'Entry Time', 'Exit Time', 'Duration', 'Fee', 'Method', 'Status']);
+
+            foreach ($logs as $log) {
+                $totalMinutes = $log->entry_time->diffInMinutes($log->exit_time);
+                $duration = floor($totalMinutes / 60) . 'h ' . ($totalMinutes % 60) . 'm';
+                
+                fputcsv($file, [
+                    $log->created_at->format('Y-m-d'),
+                    $log->parkingSlot->slot_number ?? 'N/A',
+                    $log->vehicle->license_plate ?? 'N/A',
+                    ucfirst($log->vehicle->type ?? 'Car'),
+                    $log->entry_time->format('H:i:s'),
+                    $log->exit_time->format('H:i:s'),
+                    $duration,
+                    '₱' . number_format($log->total_fee, 2),
+                    ucfirst($log->payment_method ?? 'Cash'),
+                    $log->exit_time > now() ? 'Active' : 'Completed'
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
     public function getParkingHistory(Request $request)
     {
         $user = auth()->user();
@@ -271,14 +356,21 @@ class ModernDashboardController extends Controller
         return response()->json([
             'success' => true,
             'history' => $history->map(function ($record) {
+                $totalMinutes = $record->entry_time->diffInMinutes($record->exit_time);
+                $duration = floor($totalMinutes / 60) . 'h ' . ($totalMinutes % 60) . 'm';
+                
                 return [
                     'id' => $record->id,
-                    'date' => $record->created_at->format('Y-m-d'),
-                    'slot' => $record->parkingSlot->slot_number,
-                    'duration' => $record->entry_time->diffInHours($record->exit_time) . 'h ' . 
-                               ($record->entry_time->diffInMinutes($record->exit_time) % 60) . 'm',
-                    'vehicle' => $record->vehicle->license_plate,
+                    'date' => $record->entry_time->format('M d, Y'),
+                    'slot' => $record->parkingSlot->slot_number ?? 'N/A',
+                    'duration' => $duration,
+                    'vehicle' => $record->vehicle->license_plate ?? 'N/A',
+                    'vehicle_details' => ($record->vehicle->make ?? '') . ' ' . ($record->vehicle->model ?? ''),
+                    'vehicle_type' => ucfirst($record->vehicle->type ?? 'Car'),
+                    'entry_time' => $record->entry_time->format('h:i:s A'),
+                    'exit_time' => $record->exit_time ? $record->exit_time->format('h:i:s A') : '—',
                     'amount' => '₱' . number_format($record->total_fee, 2),
+                    'method' => ucfirst($record->payment_method ?? 'Cash'),
                     'status' => $record->exit_time > now() ? 'active' : 'completed'
                 ];
             })
@@ -368,5 +460,59 @@ class ModernDashboardController extends Controller
         $totalSessions = ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))->count();
 
         return view('user.history', compact('transactions', 'totalSpent', 'totalSessions'));
+    }
+
+    private function getLatestNotifications($limit = 5)
+    {
+        $user = auth()->user();
+        if (!$user) return collect();
+        
+        $notifs = collect();
+
+        $notifs->push([
+            'type' => 'system',
+            'title' => 'Welcome to ParkMaster!',
+            'message' => "Hi {$user->name}, thank you for joining our parking management system.",
+            'icon' => 'fas fa-hand-peace',
+            'bg' => 'rgba(34, 211, 238, 0.1)',
+            'color' => 'var(--secondary-color)',
+            'time' => $user->created_at,
+        ]);
+
+        $logs = ParkingLog::where('user_id', $user->id)
+            ->with(['parkingSlot', 'vehicle'])
+            ->latest()
+            ->limit($limit)
+            ->get();
+
+        foreach ($logs as $log) {
+            $isCompleted = $log->exit_time <= now();
+            $notifs->push([
+                'type' => 'parking',
+                'title' => $isCompleted ? 'Parking Session Completed' : 'Active Parking Session',
+                'message' => $isCompleted 
+                    ? "Your session at Slot {$log->parkingSlot->slot_number} for {$log->vehicle->license_plate} has ended."
+                    : "You currently have an active session at Slot {$log->parkingSlot->slot_number}.",
+                'icon' => 'fas fa-parking',
+                'bg' => $isCompleted ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 48, 3, 0.1)',
+                'color' => $isCompleted ? 'var(--success-color)' : 'var(--primary-color)',
+                'time' => $log->created_at,
+            ]);
+        }
+
+        $vehicles = $user->vehicles()->latest()->limit($limit)->get();
+        foreach ($vehicles as $vehicle) {
+            $notifs->push([
+                'type' => 'vehicle',
+                'title' => 'New Vehicle Added',
+                'message' => "Vehicle {$vehicle->license_plate} ({$vehicle->make} {$vehicle->model}) has been registered.",
+                'icon' => 'fas fa-car-side',
+                'bg' => 'rgba(245, 158, 11, 0.1)',
+                'color' => 'var(--warning-color)',
+                'time' => $vehicle->created_at,
+            ]);
+        }
+
+        return $notifs->sortByDesc('time')->take($limit);
     }
 }

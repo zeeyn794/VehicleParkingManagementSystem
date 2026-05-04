@@ -112,8 +112,8 @@
                         <div class="w-16 h-16 bg-[#1b1b18] dark:bg-[#eeeeec] text-white dark:text-[#1C1C1A] rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-8 shadow-xl">
                             1
                         </div>
-                        <h3 class="text-xl font-bold mb-4">Register Facility</h3>
-                        <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Sign up and configure your parking zones, slots, and operator permissions in minutes.</p>
+                        <h3 class="text-xl font-bold mb-4">Claim Your Space</h3>
+                        <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Upon arrival, open the web app and select your parking zone. Enter your vehicle details to let our system—and our staff—know you’ve arrived.</p>
                     </div>
 
                     <!-- Step 2 -->
@@ -121,8 +121,8 @@
                         <div class="w-16 h-16 bg-[#f53003] text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-8 shadow-xl shadow-[#f5300330]">
                             2
                         </div>
-                        <h3 class="text-xl font-bold mb-4">Live Monitoring</h3>
-                        <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Start logging vehicle entries and exits. Watch your dashboard update in real-time as slots fill up.</p>
+                        <h3 class="text-xl font-bold mb-4">Park with Confidence</h3>
+                        <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Once you've submitted your entry, head to your spot. Your status is instantly updated on the staff's master dashboard, confirming your vehicle is authorized.</p>
                     </div>
 
                     <!-- Step 3 -->
@@ -130,9 +130,9 @@
                         <div class="w-16 h-16 bg-[#1b1b18] dark:bg-[#eeeeec] text-white dark:text-[#1C1C1A] rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-8 shadow-xl">
                             3
                         </div>
-                        <h3 class="text-xl font-bold mb-4">Analyze & Optimize</h3>
-                        <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Use historical data and peak-hour reports to optimize your space and improve the flow of traffic.</p>
-                    </div>
+                        <h3 class="text-xl font-bold mb-4">Manage Your Stay</h3>
+                        <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Monitor your parking duration and current fees in real-time. When you're ready to leave, simply end your session; the staff will be alerted to clear your slot for the next visitor.</p>
+                        
 
                     <!-- Connecting Line (Desktop) -->
                     <div class="hidden md:block absolute top-8 left-[20%] right-[20%] h-0.5 border-t-2 border-dashed border-[#19140015] dark:border-[#ffffff15] -z-0"></div>

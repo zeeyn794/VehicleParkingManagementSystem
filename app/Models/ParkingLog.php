@@ -14,6 +14,7 @@ class ParkingLog extends Model
         'entry_time',
         'exit_time',
         'total_fee',
+        'payment_method',
     ];
 
     protected $casts = [

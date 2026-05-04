@@ -22,9 +22,11 @@ Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(fu
     Route::get('/slots', [ModernDashboardController::class, 'getParkingSlots'])->name('slots');
     Route::get('/history', [ModernDashboardController::class, 'historyPage'])->name('history');
     Route::get('/history/json', [ModernDashboardController::class, 'getParkingHistory'])->name('history.json');
+    Route::get('/history/export', [ModernDashboardController::class, 'exportHistory'])->name('history.export');
     Route::post('/vehicles', [ModernDashboardController::class, 'addVehicle'])->name('vehicles.add');
     Route::post('/payments', [ModernDashboardController::class, 'addPaymentMethod'])->name('payments.add');
     Route::view('/parking', 'user.parking')->name('parking');
+
     Route::view('/session', 'user.session')->name('session');
     Route::view('/vehicles', 'user.vehicles')->name('vehicles');
     Route::view('/payments', 'user.payments')->name('payments');

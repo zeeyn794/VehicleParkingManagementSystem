@@ -108,9 +108,6 @@
                 <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-home"></i> Admin Dashboard
                 </a>
-                <a href="{{ route('admin.occupancy') }}" class="nav-item {{ request()->routeIs('admin.occupancy') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i> Occupancy Overview
-                </a>
                 <a href="{{ route('admin.slots') }}" class="nav-item {{ request()->routeIs('admin.slots') ? 'active' : '' }}">
                     <i class="fas fa-parking"></i> Slot Management
                 </a>

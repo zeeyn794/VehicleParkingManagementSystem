@@ -40,6 +40,20 @@
             --text-light: #706f6c;
             --border-color: #3E3E3A;
         }
+        @media print {
+            body * { visibility: hidden; }
+            #parkingTicket, #parkingTicket * { visibility: visible; }
+            #parkingTicket {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .modal, .modal-content { background: white !important; box-shadow: none !important; border: none !important; }
+            .modal-footer, .modal-close { display: none !important; }
+        }
 
         * {
             margin: 0;
@@ -264,8 +278,99 @@
             right: 0.25rem;
             width: 8px;
             height: 8px;
-            background: var(--danger-color);
+            background: var(--primary-color);
             border-radius: 50%;
+            border: 2px solid var(--light-surface);
+            display: {{ $allNotificationsCount > 0 ? 'block' : 'none' }};
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 70px;
+            right: 2rem;
+            width: 320px;
+            background: var(--light-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 0.125rem;
+            box-shadow: var(--shadow-xl);
+            display: none;
+            z-index: 1001;
+            overflow: hidden;
+            animation: fadeInDropdown 0.2s ease-out;
+        }
+
+        @keyframes fadeInDropdown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notification-dropdown.active {
+            display: block;
+        }
+
+        .notification-dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(245, 48, 3, 0.02);
+        }
+
+        .notification-dropdown-header h4 {
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .notification-dropdown-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-dropdown-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .notification-dropdown-item:hover {
+            background: rgba(245, 48, 3, 0.05);
+        }
+
+        .notification-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-dropdown-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .notification-dropdown-content {
+            flex: 1;
+        }
+
+        .notification-dropdown-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .notification-dropdown-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
         }
 
         .theme-toggle {
@@ -616,9 +721,15 @@
             color: var(--text-primary);
         }
 
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
+
         .history-table {
             width: 100%;
             border-collapse: collapse;
+            font-variant-numeric: tabular-nums;
         }
 
         .history-table th {
@@ -627,11 +738,14 @@
             border-bottom: 1px solid var(--border-color);
             font-weight: 600;
             color: var(--text-secondary);
+            white-space: nowrap;
         }
 
         .history-table td {
             padding: 1rem;
             border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            vertical-align: middle;
         }
 
         .history-table tr:hover {
@@ -1023,10 +1137,6 @@
                         <i class="fas fa-home"></i>
                         <span class="nav-text">Admin Dashboard</span>
                     </a>
-                    <a href="{{ route('admin.occupancy') }}" class="nav-item {{ request()->routeIs('admin.occupancy') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar"></i>
-                        <span class="nav-text">Occupancy Overview</span>
-                    </a>
                     <a href="{{ route('admin.slots') }}" class="nav-item {{ request()->routeIs('admin.slots') ? 'active' : '' }}">
                         <i class="fas fa-parking"></i>
                         <span class="nav-text">Slot Management</span>
@@ -1093,10 +1203,35 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="notification-btn" onclick="showNotifications()">
+                    <button class="notification-btn" onclick="toggleNotifications(event)">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge"></span>
                     </button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-dropdown-header">
+                            <h4>Notifications</h4>
+                        </div>
+                        <div class="notification-dropdown-list">
+                            @forelse($recentNotifications as $notif)
+                            <a href="javascript:void(0)" onclick="showPage('notifications'); document.getElementById('notificationDropdown').classList.remove('active');" class="notification-dropdown-item">
+                                <div class="notification-dropdown-icon" style="background: {{ $notif['bg'] }}; color: {{ $notif['color'] }};">
+                                    <i class="{{ $notif['icon'] }}"></i>
+                                </div>
+                                <div class="notification-dropdown-content">
+                                    <div class="notification-dropdown-title">{{ $notif['title'] }}</div>
+                                    <div class="notification-dropdown-time">{{ $notif['time']->diffForHumans() }}</div>
+                                </div>
+                            </a>
+                            @empty
+                            <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                                <p style="font-size: 0.8125rem;">No recent notifications</p>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+                            <a href="javascript:void(0)" onclick="showPage('notifications'); document.getElementById('notificationDropdown').classList.remove('active');" style="font-size: 0.8125rem; color: var(--text-secondary); text-decoration: none; font-weight: 600;">View All Activity</a>
+                        </div>
+                    </div>
                     <button class="theme-toggle" onclick="toggleTheme()">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
@@ -1113,6 +1248,47 @@
             <div class="dashboard-content">
 
                 <section class="page-section" id="page-dashboard">
+                    <div id="timerSection" style="display: none; margin-bottom: 2rem;">
+                        <div class="section-header">
+                            <h2 class="section-title">Active Parking Session</h2>
+                        </div>
+                        
+                        <div class="timer-container" style="background: linear-gradient(135deg, #f53003, #d62828); color: white; padding: 2.5rem; border-radius: 1rem; text-align: center; margin-bottom: 1.5rem; box-shadow: 0 10px 20px rgba(245, 48, 3, 0.2);">
+                            <div style="font-size: 4.5rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: 0.2rem; font-family: 'Courier New', monospace;" id="timerDisplay">00:00:00</div>
+                            <div style="font-size: 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.2rem; font-weight: 600;">Time Remaining</div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div class="overview-card" style="text-align: center; padding: 1.25rem; border-bottom: 4px solid #f53003;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f53003; margin-bottom: 0.25rem;" id="timerFee">₱0.00</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Current Fee</div>
+                            </div>
+                            <div class="overview-card" style="text-align: center; padding: 1.25rem; border-bottom: 4px solid #f53003;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f53003; margin-bottom: 0.25rem;" id="timerRate">₱0.00</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Hourly Rate</div>
+                            </div>
+                            <div class="overview-card" style="text-align: center; padding: 1.25rem; border-bottom: 4px solid #f53003;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f53003; margin-bottom: 0.25rem;" id="timerSlot">-</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Slot</div>
+                            </div>
+                            <div class="overview-card" style="text-align: center; padding: 1.25rem; border-bottom: 4px solid #f53003;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f53003; margin-bottom: 0.25rem;" id="timerPlate">-</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Plate</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <button class="btn btn-success" style="padding: 1rem; font-weight: 700; border-radius: 0.5rem;" onclick="openExtendModal()">
+                                <i class="fas fa-plus-circle" style="margin-right: 0.5rem;"></i>
+                                Extend
+                            </button>
+                            <button class="btn btn-danger" style="padding: 1rem; font-weight: 700; border-radius: 0.5rem;" onclick="confirmEndSession()">
+                                <i class="fas fa-stop-circle" style="margin-right: 0.5rem;"></i>
+                                End
+                            </button>
+                        </div>
+                        
+                    </div>
                 <section class="overview-section">
                     <div class="overview-card">
                         <div class="overview-header">
@@ -1131,36 +1307,28 @@
                         <div class="overview-label">{{ ucfirst($user->role) }} Member Since {{ $user->created_at->format('Y') }}</div>
                     </div>
 
-                    <div class="overview-card">
+                    <div class="overview-card" id="currentParkingCard">
                         <div class="overview-header">
                             <div>
                                 <div class="overview-title">Current Parking</div>
-                                @if($activeSessions->count() > 0)
-                                    <div class="parking-status status-parked">
-                                        <i class="fas fa-circle"></i>
-                                        Parked
-                                    </div>
-                                @else
-                                    <div class="parking-status status-available">
-                                        <i class="fas fa-circle"></i>
-                                        Available
-                                    </div>
-                                @endif
+                                <div class="parking-status {{ $activeSessions->count() > 0 ? 'status-parked' : 'status-available' }}" id="currentParkingStatus">
+                                    <i class="fas fa-circle"></i>
+                                    {{ $activeSessions->count() > 0 ? 'Parked' : 'Available' }}
+                                </div>
                             </div>
                             <div class="overview-icon icon-success">
                                 <i class="fas fa-car"></i>
                             </div>
                         </div>
-                        @if($activeSessions->count() > 0)
-                            @php $session = $activeSessions->first(); @endphp
-                            <div class="overview-value">{{ $session->parkingSlot->slot_number }}</div>
-                            <div class="overview-label">Slot {{ $session->parkingSlot->slot_number }} • Active</div>
-                        @else
-                            <div class="overview-value">No Active</div>
-                            <div class="overview-label">Not Currently Parked</div>
-                        @endif
+                        <div class="overview-value" id="currentParkingValue">
+                            {{ $activeSessions->count() > 0 ? $activeSessions->first()->parkingSlot->slot_number : 'No Active' }}
+                        </div>
+                        <div class="overview-label" id="currentParkingLabel">
+                            {{ $activeSessions->count() > 0 ? 'Slot ' . $activeSessions->first()->parkingSlot->slot_number . ' • Active' : 'Not Currently Parked' }}
+                        </div>
                     </div>
 
+                    @unless(Auth::user()->isAdmin())
                     <div class="overview-card">
                         <div class="overview-header">
                             <div>
@@ -1186,131 +1354,33 @@
                         <div class="overview-value" id="overview-vehicle-count">{{ $userVehicles->count() }}</div>
                         <div class="overview-label">Registered Vehicles</div>
                     </div>
+                    @endunless
                 </section>
 
 
 
-                <section class="timer-section" id="timerSection">
-                    <div class="section-header">
-                        <h2 class="section-title">Current Session</h2>
-                    </div>
-                    <div class="timer-display">
-                        <div class="timer-value" id="timerDisplay">02:15:30</div>
-                        <div class="timer-label">Parking Duration</div>
-                    </div>
-                    <div class="billing-info">
-                        <div class="billing-item">
-                            <div class="billing-value">₱6.25</div>
-                            <div class="billing-label">Current Fee</div>
-                        </div>
-                        <div class="billing-item">
-                            <div class="billing-value">₱3.00</div>
-                            <div class="billing-label">Hourly Rate</div>
-                        </div>
-                        <div class="billing-item">
-                            <div class="billing-value">A-15</div>
-                            <div class="billing-label">Slot Number</div>
-                        </div>
-                        <div class="billing-item">
-                            <div class="billing-value">ABC-123</div>
-                            <div class="billing-label">License Plate</div>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-success btn-block" onclick="extendParking()">
-                            <i class="fas fa-plus"></i>
-                            Extend Time
-                        </button>
-                        <button class="btn btn-danger btn-block" onclick="endParking()">
-                            <i class="fas fa-stop"></i>
-                            End Session
-                        </button>
-                    </div>
-                </section>
 
-                <section class="history-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Parking History</h2>
-                    </div>
-                    <div class="history-controls">
-                        <input type="text" class="search-input" placeholder="Search history..." id="historySearch">
-                        <select class="filter-select" id="historyFilter">
-                            <option value="">All Time</option>
-                            <option value="today">Today</option>
-                            <option value="week">This Week</option>
-                            <option value="month">This Month</option>
-                        </select>
-                        <button class="btn btn-secondary" onclick="exportHistory()">
-                            <i class="fas fa-download"></i>
-                            Export
-                        </button>
-                    </div>
-                    <div class="table-container">
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Slot</th>
-                                    <th>Duration</th>
-                                    <th>Vehicle</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
                 </section>
 
                 <section class="page-section hidden" id="page-parking">
                     <div class="parking-section">
-                        <div class="section-header">
-                            <h2 class="section-title">My Active Parking Sessions</h2>
+
+                        <div id="noActiveSessionMessage" style="display: block;">
+                            <div class="section-header">
+                                <h2 class="section-title">My Parking</h2>
+                            </div>
+                            <div style="text-align: center; padding: 6rem 3rem; background: var(--card-bg); border-radius: 1.5rem; border: 1px dashed var(--border-color); margin-top: 1rem;">
+                                <div style="width: 100px; height: 100px; background: var(--light-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+                                    <i class="fas fa-parking" style="font-size: 3rem; color: var(--text-secondary); opacity: 0.5;"></i>
+                                </div>
+                                <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-primary);">No Active Sessions</h3>
+                                <p style="color: var(--text-secondary); margin-bottom: 2.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">You are not currently parked. Find an available slot on the dashboard to start a new session.</p>
+                                <button class="btn btn-primary" style="padding: 1rem 2rem; font-weight: 700; border-radius: 0.75rem;" onclick="showPage('dashboard')">
+                                    <i class="fas fa-search" style="margin-right: 0.5rem;"></i>
+                                    Browse Available Slots
+                                </button>
+                            </div>
                         </div>
-                        @if($activeSessions->count() > 0)
-                            @foreach($activeSessions as $session)
-                            <div class="overview-card" style="margin-bottom: 1rem;">
-                                <div class="overview-header">
-                                    <div>
-                                        <div class="overview-title">Slot {{ $session->parkingSlot->slot_number }}</div>
-                                        <div class="parking-status status-parked">
-                                            <i class="fas fa-circle"></i>
-                                            Active
-                                        </div>
-                                    </div>
-                                    <div class="overview-icon icon-success">
-                                        <i class="fas fa-car"></i>
-                                    </div>
-                                </div>
-                                <div class="overview-value">{{ $session->vehicle->license_plate }}</div>
-                                <div class="overview-label">
-                                    Entry: {{ $session->entry_time->format('M d, Y H:i') }}<br>
-                                    Exit: {{ $session->exit_time->format('M d, Y H:i') }}<br>
-                                    Fee: ${{ number_format($session->total_fee, 2) }}
-                                </div>
-                                <div class="btn-group" style="margin-top: 1rem;">
-                                    <button class="btn btn-success" onclick="extendSession({{ $session->id }})">
-                                        <i class="fas fa-plus"></i>
-                                        Extend
-                                    </button>
-                                    <button class="btn btn-danger" onclick="endSession({{ $session->id }})">
-                                        <i class="fas fa-stop"></i>
-                                        End Session
-                                    </button>
-                                </div>
-                            </div>
-                            @endforeach
-                        @else
-                             <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                                <i class="fas fa-parking" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                                <p>No active parking sessions</p>
-                                <a href="#parkingAvailabilityGrid" class="btn btn-primary" style="margin-top: 1rem;">
-                                    Book a Slot
-                                </a>
-                            </div>
-                        @endif
                     </div>
 
                     <div class="parking-section" id="parkingAvailabilityGrid" style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
@@ -1336,6 +1406,7 @@
                     </div>
                 </section>
 
+                @unless(Auth::user()->isAdmin())
                 <section class="page-section hidden" id="page-history">
                     <div class="parking-section">
                         <div class="section-header">
@@ -1366,6 +1437,7 @@
                                         <th>Exit Time</th>
                                         <th>Duration</th>
                                         <th>Amount</th>
+                                        <th>Method</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -1381,6 +1453,7 @@
                         </div>
                     </div>
                 </section>
+                @endunless
 
                 <section class="page-section hidden" id="page-vehicles">
                     <div class="parking-section">
@@ -1391,29 +1464,31 @@
                                 Add Vehicle
                             </button>
                         </div>
-                        <div id="vehiclesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div id="vehiclesGrid" style="display: flex; flex-direction: column; gap: 1rem;">
                             @forelse($userVehicles as $vehicle)
-                            <div class="overview-card">
-                                <div class="overview-header">
-                                    <div>
-                                        <div class="overview-title">{{ $vehicle->license_plate }}</div>
-                                        <div class="parking-status" style="background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
-                                            <i class="fas fa-check-circle"></i>
-                                            Active
+                            <div class="overview-card" style="padding: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div class="overview-header" style="margin-bottom: 0.25rem;">
+                                        <div>
+                                            <div class="overview-title" style="font-size: 0.8rem;">{{ $vehicle->license_plate }}</div>
+                                            <div class="parking-status" style="background: rgba(16, 185, 129, 0.1); color: var(--success-color); font-size: 0.7rem; padding: 0.15rem 0.4rem;">
+                                                <i class="fas fa-check-circle"></i>
+                                                Active
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="overview-icon icon-primary">
-                                        <i class="fas fa-car-side"></i>
-                                    </div>
+                                    <div class="overview-value" style="font-size: 1.125rem; margin-bottom: 0.15rem;">{{ $vehicle->make }} {{ $vehicle->model }}</div>
+                                    <div class="overview-label" style="font-size: 0.8rem;">Color: {{ $vehicle->color ?? 'N/A' }}</div>
                                 </div>
-                                <div class="overview-value">{{ $vehicle->make }} {{ $vehicle->model }}</div>
-                                <div class="overview-label">Color: {{ $vehicle->color ?? 'N/A' }}</div>
+                                <div style="text-align: right; margin-right: 0.5rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Type</span>
+                                    <div style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); text-transform: capitalize;">{{ $vehicle->type ?? 'Car' }}</div>
+                                </div>
                             </div>
                             @empty
                             <div id="noVehiclesMessage" style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
-                                <i class="fas fa-car" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
                                 <p>No vehicles added yet</p>
-                                <p style="font-size: 0.875rem; margin-top: 0.5rem;">Click "Add Vehicle" to get started</p>
+                                <p style="font-size: 0.8rem; margin-top: 0.5rem;">Click "Add Vehicle" to get started</p>
                             </div>
                             @endforelse
                         </div>
@@ -1473,7 +1548,7 @@
                                         <th>Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="historyTableBody">
                                     <tr>
                                         <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
                                             <p>No payment records yet</p>
@@ -1563,6 +1638,35 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="page-section hidden" id="page-notifications">
+                    <div class="parking-section">
+                        <div class="section-header">
+                            <h2 class="section-title">System Notifications</h2>
+                        </div>
+                        <div class="activity-section">
+                            @forelse($recentNotifications as $notif)
+                            <div class="overview-card" style="margin-bottom: 1rem; display: flex; gap: 1.5rem; align-items: center; border-left: 4px solid {{ $notif['color'] }};">
+                                <div class="overview-icon" style="background: {{ $notif['bg'] }}; color: {{ $notif['color'] }}; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                    <i class="{{ $notif['icon'] }}"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                                        <h4 style="font-weight: 700; color: var(--text-primary); margin: 0;">{{ $notif['title'] }}</h4>
+                                        <span style="font-size: 0.8125rem; color: var(--text-secondary);">{{ $notif['time']->diffForHumans() }}</span>
+                                    </div>
+                                    <p style="color: var(--text-secondary); margin: 0; font-size: 0.9375rem;">{{ $notif['message'] }}</p>
+                                </div>
+                            </div>
+                            @empty
+                            <div style="padding: 4rem; text-align: center; color: var(--text-secondary); background: var(--light-surface); border-radius: 0.125rem;">
+                                <i class="fas fa-bell-slash" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                <p>No new notifications at this time.</p>
+                            </div>
+                            @endforelse
                         </div>
                     </div>
                 </section>
@@ -1724,8 +1828,8 @@
                     <label class="form-label">Vehicle Type *</label>
                     <select class="form-input" id="vehicleType" required>
                         <option value="">Select Type</option>
-                        @foreach($parkingRates as $rate)
-                            <option value="{{ $rate->vehicle_type }}">{{ ucfirst($rate->vehicle_type) }}</option>
+                        @foreach($parkingRates as $type => $rate)
+                            <option value="{{ $type }}">{{ ucfirst($type) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -1949,20 +2053,132 @@
             </form>
         </div>
     </div>
+
+    <div class="modal" id="extendSessionModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: #1b1b18; border-bottom: 1px solid var(--border-color);">
+                <h3 class="modal-title" style="color: white; font-weight: 700;">
+                    <i class="fas fa-plus-circle" style="color: #f53003; margin-right: 0.5rem;"></i>
+                    Extend Parking Session
+                </h3>
+                <button class="modal-close" onclick="closeModal('extendSessionModal')" style="color: white; opacity: 0.6;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="extendSessionForm" style="padding: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 600; color: var(--text-primary);">How many additional hours?</label>
+                    <select class="form-input" id="extendHours" required style="border: 2px solid var(--border-color);">
+                        @for($i = 1; $i <= 10; $i++)
+                            <option value="{{ $i }}">{{ $i }} Hour{{ $i > 1 ? 's' : '' }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="form-group" style="background: var(--light-bg); padding: 1rem; border-radius: 0.75rem; margin-top: 1rem;">
+                    <label class="form-label" style="margin-bottom: 0.25rem;">Estimated Additional Fee</label>
+                    <input type="text" class="form-input" id="extendFee" readonly value="₱0.00" style="background: transparent; border: none; font-size: 1.5rem; font-weight: 800; color: var(--success-color); padding: 0;">
+                </div>
+                <div class="btn-group" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('extendSessionModal')" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-success" style="flex: 2; font-weight: 700;">
+                        <i class="fas fa-check-circle"></i>
+                        Confirm Extension
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="ticketModal">
+        <div class="modal-content" style="max-width: 400px; padding: 0; border-radius: 1rem; overflow: hidden; max-height: 95vh; display: flex; flex-direction: column;">
+            <div style="overflow-y: auto; flex: 1;">
+            <div id="parkingTicket" style="padding: 2.5rem; background: white; color: #1b1b18; font-family: 'Courier New', Courier, monospace; border-bottom: 1px solid #eee;">
+                <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                    <div style="background: #f53003; color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        <i class="fas fa-parking"></i>
+                    </div>
+                    <h2 style="margin: 0; color: #f53003; font-weight: 900; letter-spacing: 2px;">PARKMASTER</h2>
+                    <p style="font-size: 0.85rem; margin: 0.5rem 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Parking Receipt</p>
+                    <p style="font-size: 0.75rem; color: #706f6c;" id="ticketDate"></p>
+                </div>
+                
+                <div style="margin-bottom: 2rem; font-size: 0.9rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">CUSTOMER:</span>
+                        <span style="font-weight: 700; text-transform: uppercase;" id="ticketName">JOHN DOE</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">TRX ID:</span>
+                        <span style="font-weight: 700;" id="ticketId">#TRX-00000</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">SLOT:</span>
+                        <span style="font-weight: 700; font-size: 1.1rem;" id="ticketSlot">A-01</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">PLATE:</span>
+                        <span style="font-weight: 700;" id="ticketPlate">ABC-1234</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">VEHICLE:</span>
+                        <span style="font-weight: 700;" id="ticketVehicleDetails">Honda Civic</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">TYPE:</span>
+                        <span style="font-weight: 700; text-transform: uppercase;" id="ticketVehicleType">Car</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">ENTRY:</span>
+                        <span style="font-weight: 700;" id="ticketEntry">12:00 PM</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">HOURS:</span>
+                        <span style="font-weight: 700;" id="ticketDuration">2 Hours</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #706f6c;">METHOD:</span>
+                        <span style="font-weight: 700; text-transform: uppercase;" id="ticketMethod">CASH</span>
+                    </div>
+                </div>
+                
+                <div style="border-top: 2px dashed #ccc; padding-top: 1.5rem; text-align: center;">
+                    <p style="font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 600; color: #706f6c;">AMOUNT PAID</p>
+                    <h1 style="font-size: 2.75rem; margin: 0; font-weight: 900; color: #1b1b18;" id="ticketTotal">₱100.00</h1>
+                </div>
+                
+                <div style="margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #706f6c;">
+                    <p style="margin-bottom: 0.25rem;">Thank you for your business!</p>
+                    <p>Scan this for exit validation</p>
+                    <div style="margin-top: 1.5rem; opacity: 0.8;">
+                        <i class="fas fa-barcode" style="font-size: 4rem; color: #1b1b18;"></i>
+                    </div>
+                </div>
+            </div>
+            </div>
+            
+            <div class="modal-footer" style="padding: 1.5rem; display: flex; gap: 1rem; background: #f9f9f9;">
+                <button class="btn btn-secondary" onclick="closeModal('ticketModal')" style="flex: 1; height: 50px; font-weight: 600;">Close</button>
+                <button class="btn btn-primary" onclick="window.print()" style="flex: 1.5; height: 50px; font-weight: 700; background: #1b1b18; border-color: #1b1b18;">
+                    <i class="fas fa-print" style="margin-right: 0.5rem;"></i> Print Ticket
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="notification-container" id="notificationContainer"></div>
 
     <script>
         const userVehiclesData = @json($userVehicles->map(function($v) { return ['id' => $v->id, 'type' => $v->type]; })->keyBy('id'));
-        const parkingRatesData = @json($parkingRates->pluck('hourly_rate', 'vehicle_type'));
+        const parkingRatesData = @json($parkingRates);
 
         const state = {
             currentUser: {
-                name: '{{ $user->name }}',
-                email: '{{ $user->email }}',
-                role: '{{ $user->role }}',
-                balance: {{ $totalSpent }},
-                status: '{{ $activeSessions->count() > 0 ? 'parked' : 'available' }}',
-                currentParking: {{ $activeSessions->count() > 0 ? "'" . $activeSessions->first()->parkingSlot->slot_number . "'" : 'null' }}
+                name: @json($user->name),
+                email: @json($user->email),
+                role: @json($user->role),
+                balance: {{ (float)$totalSpent }},
+                status: @json($activeSessions->count() > 0 ? 'parked' : 'available'),
+                currentParking: @json($activeSessions->count() > 0 ? $activeSessions->first()->parkingSlot->slot_number : null)
             },
             parkingSlots: @json($allParkingSlots),
             currentSession: @json($activeSessions->first() ?? null),
@@ -2107,10 +2323,23 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    state.history = data.history;
+                    state.history = data.history.map(log => ({
+                        id: log.id,
+                        date: log.date,
+                        slot: log.slot,
+                        vehicle: log.vehicle,
+                        vehicle_details: log.vehicle_details,
+                        vehicle_type: log.vehicle_type,
+                        entry_time: log.entry_time,
+                        exit_time: log.exit_time,
+                        duration: log.duration,
+                        amount: log.amount,
+                        method: log.method,
+                        status: log.status
+                    }));
                     state.historyLoaded = true;
                     renderHistoryTable();
-                    renderFullHistoryTable(data.history);
+                    renderFullHistoryTable(state.history);
                 } else {
                     if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--danger-color)">Failed to load history.</td></tr>`;
                 }
@@ -2120,31 +2349,27 @@
             });
         }
 
+
         function renderHistoryTable() {
             const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+            
+            const history = state.history.slice(0, 5); 
             tbody.innerHTML = '';
 
-            if (!state.historyLoaded || state.history.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                        <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                        <p>No parking history found</p>
-                    </td>
-                `;
-                tbody.appendChild(row);
+            if (history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary)">No recent activity</td></tr>`;
                 return;
             }
 
-            state.history.slice(0, 5).forEach(record => {
+            history.forEach(log => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${record.date}</td>
-                    <td>${record.slot}</td>
-                    <td>${record.duration}</td>
-                    <td>${record.vehicle}</td>
-                    <td>${record.amount}</td>
-                    <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${record.status}</span></td>
+                    <td>${log.date}</td>
+                    <td>Parking at ${log.slot}</td>
+                    <td style="font-weight: 700;">${log.amount}</td>
+                    <td>${log.method || 'Cash'}</td>
+                    <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${log.status}</span></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -2170,6 +2395,7 @@
                     <td>${log.exit_time || 'N/A'}</td>
                     <td>${log.duration}</td>
                     <td>${log.amount}</td>
+                    <td>${log.method || 'Cash'}</td>
                     <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${log.status}</span></td>
                 `;
                 tbody.appendChild(row);
@@ -2179,10 +2405,25 @@
         function startTimer() {
             if (!state.currentSession) {
                 document.getElementById('timerSection').style.display = 'none';
+                document.getElementById('noActiveSessionMessage').style.display = 'block';
                 return;
             }
             
             document.getElementById('timerSection').style.display = 'block';
+            document.getElementById('noActiveSessionMessage').style.display = 'none';
+            
+            document.getElementById('timerSlot').textContent = state.currentSession.slot_number || (state.currentSession.parking_slot ? state.currentSession.parking_slot.slot_number : '-');
+            document.getElementById('timerPlate').textContent = state.currentSession.license_plate || (state.currentSession.vehicle ? state.currentSession.vehicle.license_plate : '-');
+            
+            const hourlyRate = parseFloat(state.currentSession.hourly_rate);
+            if (isNaN(hourlyRate)) {
+                const slot = state.parkingSlots.find(s => s.id == state.currentSession.slot_id);
+                document.getElementById('timerRate').textContent = `₱${parseFloat(slot?.hourly_rate || 0).toFixed(2)}`;
+            } else {
+                document.getElementById('timerRate').textContent = `₱${hourlyRate.toFixed(2)}`;
+            }
+
+            if (state.timer) clearInterval(state.timer);
             
             const exitTime = new Date(state.currentSession.exit_time);
             
@@ -2199,20 +2440,52 @@
                 
                 const hours = Math.floor(diff / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
                 
-                const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                document.getElementById('timerDisplay').textContent = display;
+                document.getElementById('timerDisplay').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 
-                updateBillingInfo();
+                const entryTime = new Date(state.currentSession.entry_time);
+                const elapsedMs = Math.max(0, now - entryTime);
+                const elapsedMinutes = Math.floor(elapsedMs / 60000);
+                
+                const currentFee = elapsedMinutes * (hourlyRate / 60);
+                document.getElementById('timerFee').textContent = `₱${parseFloat(currentFee).toFixed(2)}`;
             }, 1000);
         }
 
-        function updateBillingInfo() {
-            if (state.currentSession) {
-                const totalFee = parseFloat(state.currentSession.total_fee).toFixed(2);
-                document.querySelector('.billing-value').textContent = `$${totalFee}`;
+        function updateOverviewCards() {
+            const statusBadge = document.getElementById('currentParkingStatus');
+            const valueDisplay = document.getElementById('currentParkingValue');
+            const labelDisplay = document.getElementById('currentParkingLabel');
+
+            if (statusBadge && valueDisplay && labelDisplay) {
+                if (state.currentUser.status === 'parked') {
+                    statusBadge.className = 'parking-status status-parked';
+                    statusBadge.innerHTML = '<i class="fas fa-circle"></i> Parked';
+                    valueDisplay.textContent = state.currentUser.currentParking || '-';
+                    labelDisplay.textContent = `Slot ${state.currentUser.currentParking || '-'} • Active`;
+                } else {
+                    statusBadge.className = 'parking-status status-available';
+                    statusBadge.innerHTML = '<i class="fas fa-circle"></i> Available';
+                    valueDisplay.textContent = 'No Active';
+                    labelDisplay.textContent = 'Not Currently Parked';
+                }
             }
+
+            fetch('/user/slots', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    state.parkingSlots = data.slots;
+                    if (document.getElementById('parkingGrid')) {
+                        generateParkingGrid();
+                    }
+                }
+            })
+            .catch(err => console.warn('Refresh failed:', err));
         }
 
         function setupEventListeners() {
@@ -2255,13 +2528,6 @@
                 handleSearch(e.target.value);
             });
 
-            document.getElementById('historyFilter').addEventListener('change', function() {
-                filterHistory(this.value);
-            });
-
-            document.getElementById('historySearch').addEventListener('input', function(e) {
-                searchHistory(e.target.value);
-            });
 
             const fullHistorySearch = document.getElementById('fullHistorySearch');
             if (fullHistorySearch) {
@@ -2321,6 +2587,7 @@
         function submitEditProfile() {
             const form = document.getElementById('editProfileForm');
             const formData = new FormData(form);
+            formData.append('_method', 'PATCH');
             const name = document.getElementById('edit-name').value;
             const email = document.getElementById('edit-email').value;
             
@@ -2364,6 +2631,7 @@
         function submitChangePassword() {
             const form = document.getElementById('changePasswordForm');
             const formData = new FormData(form);
+            formData.append('_method', 'PUT');
             
             showNotification('Updating password...', 'info');
             
@@ -2412,8 +2680,26 @@
                 return;
             }
             
-            const vehicleType = userVehiclesData[vehicleId]?.type || 'car';
-            const rate = parkingRatesData[vehicleType] || 3.00;
+            const vehicle = userVehiclesData[vehicleId];
+            if (!vehicle) {
+                console.warn('Vehicle data not found for ID:', vehicleId);
+            }
+            
+            const vehicleType = String(vehicle?.type || 'car').toLowerCase();
+            
+            let rate = parseFloat(parkingRatesData[vehicleType]);
+            if (isNaN(rate)) {
+                const slotId = state.selectedSlot?.id;
+                const slot = state.parkingSlots.find(s => s.id == slotId);
+                rate = parseFloat(slot?.hourly_rate || 0.00);
+            }
+            
+            if (rate <= 0) {
+                console.warn('Rate is 0 or not found for vehicle/slot. Checking global rates...');
+                const firstRate = Object.values(parkingRatesData)[0];
+                if (firstRate) rate = parseFloat(firstRate);
+            }
+            
             const cost = (duration * rate).toFixed(2);
             document.getElementById('estimatedCost').value = `₱${cost}`;
         }
@@ -2466,19 +2752,163 @@
                     showNotification(data.message, 'success');
                     closeModal('paymentModal');
                     closeModal('bookingModal');
-                    refreshParkingGrid();
                     
+                    state.currentSession = data.parking_session;
                     state.currentUser.status = 'parked';
                     state.currentUser.currentParking = data.parking_session.slot_number;
+
                     updateOverviewCards();
+                    startTimer();
+
+                    setTimeout(() => {
+                        const now = new Date();
+                        const durationSelect = document.getElementById('durationSelect');
+                        const durationText = durationSelect ? durationSelect.options[durationSelect.selectedIndex].text : '1 Hour';
+                        const estimatedCost = document.getElementById('estimatedCost').value;
+                        const vehicleSelect = document.getElementById('vehicleSelect');
+                        const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
+                        const fullVehicleText = selectedOption.text;
+                        const plateNumber = fullVehicleText.split('-')[0].trim();
+                        const makeModel = fullVehicleText.split('-')[1]?.trim() || 'N/A';
+                        const vehicleType = userVehiclesData[vehicleSelect.value]?.type || 'Car';
+
+                        document.getElementById('ticketDate').textContent = now.toLocaleString();
+                        document.getElementById('ticketName').textContent = state.currentUser.name;
+                        document.getElementById('ticketId').textContent = `#TRX-${data.parking_session.id.toString().padStart(5, '0')}`;
+                        document.getElementById('ticketSlot').textContent = data.parking_session.slot_number;
+                        document.getElementById('ticketPlate').textContent = plateNumber;
+                        document.getElementById('ticketVehicleDetails').textContent = makeModel;
+                        document.getElementById('ticketVehicleType').textContent = vehicleType;
+                        document.getElementById('ticketEntry').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        document.getElementById('ticketDuration').textContent = durationText;
+                        document.getElementById('ticketTotal').textContent = estimatedCost;
+                        document.getElementById('ticketMethod').textContent = state.selectedPaymentMethod || 'CASH';
+
+                        openModal('ticketModal');
+                    }, 500);
                 } else {
                     showNotification(data.message, 'error');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Payment Error:', error);
                 showNotification('Payment failed. Please try again.', 'error');
             });
+        }
+
+
+        function viewReceipt(logId) {
+            const log = state.history.find(h => h.id == logId);
+            if (!log) return;
+            
+            document.getElementById('ticketDate').textContent = log.date;
+            document.getElementById('ticketName').textContent = state.currentUser.name;
+            document.getElementById('ticketId').textContent = `#TRX-${(log.id || 0).toString().padStart(5, '0')}`;
+            document.getElementById('ticketSlot').textContent = log.slot;
+            document.getElementById('ticketPlate').textContent = log.vehicle;
+            document.getElementById('ticketVehicleDetails').textContent = log.vehicle_details || 'N/A';
+            document.getElementById('ticketVehicleType').textContent = log.vehicle_type || 'Car';
+            document.getElementById('ticketEntry').textContent = log.entry_time;
+            document.getElementById('ticketDuration').textContent = log.duration;
+            document.getElementById('ticketTotal').textContent = log.amount;
+            document.getElementById('ticketMethod').textContent = (log.method || 'CASH').toUpperCase();
+            
+            openModal('ticketModal');
+        }
+
+        function openExtendModal() {
+            if (!state.currentSession) return;
+            
+            const vehicleId = document.getElementById('vehicleSelect').value || Object.keys(userVehiclesData)[0];
+            const vehicle = userVehiclesData[vehicleId];
+            const vehicleType = String(vehicle?.type || 'car').toLowerCase();
+            
+            let rate = parseFloat(parkingRatesData[vehicleType]);
+            if (isNaN(rate)) {
+                const slot = state.parkingSlots.find(s => s.id == state.currentSession.slot_id);
+                rate = parseFloat(slot?.hourly_rate || 0.00);
+            }
+            
+            document.getElementById('extendHours').value = "1";
+            document.getElementById('extendFee').value = `₱${parseFloat(rate).toFixed(2)}`;
+            
+            document.getElementById('extendHours').onchange = (e) => {
+                document.getElementById('extendFee').value = `₱${(parseFloat(e.target.value) * rate).toFixed(2)}`;
+            };
+            
+            openModal('extendSessionModal');
+        }
+
+        document.getElementById('extendSessionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const hours = document.getElementById('extendHours').value;
+            
+            showNotification('Extending session...', 'info');
+            
+            const formData = new FormData();
+            formData.append('session_id', state.currentSession.id);
+            formData.append('additional_hours', hours);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            
+            fetch('/user/extend', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    closeModal('extendSessionModal');
+                    
+                    const oldExitTime = new Date(state.currentSession.exit_time);
+                    state.currentSession.exit_time = new Date(oldExitTime.getTime() + (hours * 60 * 60 * 1000));
+                    
+                    startTimer();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            });
+        });
+
+        function confirmEndSession() {
+            if (!state.currentSession) return;
+            
+            if (confirm('Are you sure you want to end your parking session? Final fee will be calculated based on actual duration.')) {
+                showNotification('Ending session...', 'info');
+                
+                const formData = new FormData();
+                formData.append('session_id', state.currentSession.id);
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                
+                fetch('/user/end', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        clearInterval(state.timer);
+                        state.currentSession = null;
+                        state.currentUser.status = 'available';
+                        state.currentUser.currentParking = null;
+                        
+                        startTimer();
+                        updateOverviewCards();
+                        loadHistoryData(); 
+                    } else 
+                        showNotification(data.message, 'error');
+                    }
+                });
+            }
         }
 
         function refreshParkingGrid() {
@@ -2529,19 +2959,6 @@
             }
         }
 
-        function addToHistory() {
-            const newRecord = {
-                date: new Date().toISOString().split('T')[0],
-                slot: state.currentUser.currentParking || 'A-15',
-                duration: document.getElementById('timerDisplay').textContent,
-                vehicle: 'ABC-123',
-                amount: document.querySelector('.billing-value').textContent,
-                status: 'completed'
-            };
-            
-            state.history.unshift(newRecord);
-            renderHistoryTable();
-        }
 
         function updateOverviewCards() {
             const parkingCard = document.querySelectorAll('.overview-card')[1];
@@ -2566,20 +2983,12 @@
             showNotification('You have 3 new notifications', 'info');
         }
 
-        function exportHistory() {
-            showNotification('Exporting history data...', 'info');
-            
-            setTimeout(() => {
-                showNotification('History exported successfully!', 'success');
-            }, 1000);
-        }
 
         function exportFullHistory() {
+            const filter = document.getElementById('fullHistoryFilter').value || '';
+            const search = document.getElementById('fullHistorySearch').value || '';
+            window.location.href = `/user/history/export?filter=${filter}&search=${encodeURIComponent(search)}`;
             showNotification('Exporting full history to CSV...', 'info');
-            
-            setTimeout(() => {
-                showNotification('Full history exported successfully!', 'success');
-            }, 1500);
         }
 
         function showPage(pageName) {
@@ -2604,6 +3013,7 @@
             }
             
             if (pageName === 'history') {
+                fetchFullHistory();
                 document.getElementById('fullHistorySearch').focus();
             }
         }
@@ -2731,6 +3141,8 @@
         }
 
         function addVehicleToUI(vehicle) {
+            userVehiclesData[vehicle.id] = { id: vehicle.id, type: vehicle.type };
+            
             const vehicleSelect = document.getElementById('vehicleSelect');
             const option = document.createElement('option');
             option.value = vehicle.id;
@@ -2747,21 +3159,28 @@
                 const vehicleCard = document.createElement('div');
                 vehicleCard.className = 'overview-card';
                 vehicleCard.style.animation = 'fadeInUp 0.5s ease-out forwards';
+                vehicleCard.style.padding = '0.75rem';
+                vehicleCard.style.display = 'flex';
+                vehicleCard.style.justifyContent = 'space-between';
+                vehicleCard.style.alignItems = 'center';
                 vehicleCard.innerHTML = `
-                    <div class="overview-header">
-                        <div>
-                            <div class="overview-title">${vehicle.license_plate}</div>
-                            <div class="parking-status" style="background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
-                                <i class="fas fa-check-circle"></i>
-                                Active
+                    <div>
+                        <div class="overview-header" style="margin-bottom: 0.25rem;">
+                            <div>
+                                <div class="overview-title" style="font-size: 0.8rem;">${vehicle.license_plate}</div>
+                                <div class="parking-status" style="background: rgba(16, 185, 129, 0.1); color: var(--success-color); font-size: 0.7rem; padding: 0.15rem 0.4rem;">
+                                    <i class="fas fa-check-circle"></i>
+                                    Active
+                                </div>
                             </div>
                         </div>
-                        <div class="overview-icon icon-primary">
-                            <i class="fas fa-car-side"></i>
-                        </div>
+                        <div class="overview-value" style="font-size: 1.125rem; margin-bottom: 0.15rem;">${vehicle.make || ''} ${vehicle.model || ''}</div>
+                        <div class="overview-label" style="font-size: 0.8rem;">Color: ${vehicle.color || 'N/A'}</div>
                     </div>
-                    <div class="overview-value">${vehicle.make || ''} ${vehicle.model || ''}</div>
-                    <div class="overview-label">Color: ${vehicle.color || 'N/A'}</div>
+                    <div style="text-align: right; margin-right: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Type</span>
+                        <div style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); text-transform: capitalize;">${vehicle.type || 'Car'}</div>
+                    </div>
                 `;
                 vehiclesGrid.prepend(vehicleCard);
             }
@@ -2950,63 +3369,34 @@
         }
 
         function handleSearch(query) {
-            console.log('Searching for:', query);
-        }
-
-        function filterHistory(filter) {
-            console.log('Filtering history:', filter);
-        }
-
-        function searchHistory(query) {
-            if (!query || query.trim() === '') {
-                state.history = [];
-                state.historyLoaded = false;
-                renderHistoryTable();
-                return;
+            const activePage = document.querySelector('.page-section:not(.hidden)')?.id;
+            
+            if (activePage === 'page-dashboard') {
+                const slots = document.querySelectorAll('.parking-slot');
+                slots.forEach(slot => {
+                    const slotNumber = slot.dataset.slot.toLowerCase();
+                    const slotType = slot.querySelector('.slot-type').textContent.toLowerCase();
+                    if (slotNumber.includes(query.toLowerCase()) || slotType.includes(query.toLowerCase())) {
+                        slot.style.display = 'flex';
+                    } else {
+                        slot.style.display = 'none';
+                    }
+                });
+            } else if (activePage === 'page-history') {
+                const historySearchInput = document.getElementById('fullHistorySearch');
+                if (historySearchInput) {
+                    historySearchInput.value = query;
+                    searchFullHistory(query);
+                }
+            } else if (activePage === 'page-notifications') {
+                const notifications = document.querySelectorAll('#page-notifications .overview-card');
+                notifications.forEach(notif => {
+                    const text = notif.textContent.toLowerCase();
+                    notif.style.display = text.includes(query.toLowerCase()) ? 'flex' : 'none';
+                });
             }
-            
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 3rem;">
-                        <div class="loading"></div>
-                        <p style="margin-top: 1rem; color: var(--text-secondary);">Searching history...</p>
-                    </td>
-                </tr>
-            `;
-            
-            fetch(`/user/history?search=${encodeURIComponent(query)}`, {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    state.history = data.history.map(log => ({
-                        date: new Date(log.created_at).toLocaleDateString(),
-                        slot: log.parking_slot.slot_number,
-                        duration: calculateDuration(log.entry_time, log.exit_time),
-                        vehicle: log.vehicle.license_plate,
-                        amount: `₱${parseFloat(log.total_fee).toFixed(2)}`,
-                        status: log.status
-                    }));
-                    state.historyLoaded = true;
-                    renderHistoryTable();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 3rem; color: var(--danger-color);">
-                            <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                            <p>Failed to load history. Please try again.</p>
-                        </td>
-                    </tr>
-                `;
-            });
         }
+
 
         function calculateDuration(entry, exit) {
             const diff = new Date(exit) - new Date(entry);
@@ -3019,6 +3409,18 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
             sidebar.classList.toggle('active');
+        }
+
+        function toggleNotifications(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('active');
+            
+            document.onclick = function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            };
         }
 
         function toggleTheme() {

@@ -106,6 +106,8 @@ class DashboardController extends Controller
 
         $callback = function() use($logs) {
             $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
             fputcsv($file, ['User', 'Slot', 'Vehicle', 'Type', 'Entry Time', 'Exit Time', 'Total Fee']);
 
             foreach ($logs as $log) {
@@ -199,6 +201,8 @@ class DashboardController extends Controller
 
         $callback = function() use($transactions) {
             $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
             fputcsv($file, ['Transaction ID', 'Date', 'User', 'Slot', 'Vehicle', 'Type', 'Amount Collected']);
 
             foreach ($transactions as $t) {

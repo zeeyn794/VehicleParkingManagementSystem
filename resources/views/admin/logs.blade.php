@@ -49,8 +49,8 @@
                     <td style="padding: 1rem; font-weight: 600;">{{ $log->parkingSlot->slot_number ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->vehicle->license_plate ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);"><span style="text-transform: capitalize;">{{ $log->vehicle->type ?? 'Car' }}</span></td>
-                    <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->entry_time ? \Carbon\Carbon::parse($log->entry_time)->format('M d, H:i') : '-' }}</td>
-                    <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->exit_time ? \Carbon\Carbon::parse($log->exit_time)->format('M d, H:i') : '-' }}</td>
+                    <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->entry_time ? \Carbon\Carbon::parse($log->entry_time)->format('M d, h:i:s A') : '-' }}</td>
+                    <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->exit_time ? \Carbon\Carbon::parse($log->exit_time)->format('M d, h:i:s A') : '-' }}</td>
                     <td style="padding: 1rem; color: var(--primary-color); font-weight: 700;">₱{{ number_format($log->total_fee, 2) }}</td>
                 </tr>
                 @empty
