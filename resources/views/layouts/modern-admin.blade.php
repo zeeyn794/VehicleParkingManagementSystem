@@ -505,13 +505,7 @@
                     <button class="menu-toggle" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="header-logo lg:hidden">
-                        <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 30px; height: 30px; object-fit: cover; border-radius: 6px;">
-                    </div>
-                    <form action="{{ route('admin.logs') }}" method="GET" class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search everywhere..." id="searchInput">
-                    </form>
+                    <div style="flex: 1;"></div>
                 </div>
                 <div class="header-right">
                     <button class="notification-btn" onclick="toggleNotifications(event)">

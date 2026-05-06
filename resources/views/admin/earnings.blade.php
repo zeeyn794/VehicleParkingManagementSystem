@@ -85,7 +85,7 @@
                 @forelse($transactions as $transaction)
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 1rem; font-family: monospace; color: var(--text-secondary);">#TRX-{{ str_pad($transaction->id, 5, '0', STR_PAD_LEFT) }}</td>
-                    <td style="padding: 1rem; color: var(--text-secondary);">{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y H:i') }}</td>
+                    <td style="padding: 1rem; color: var(--text-secondary);">{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y h:i A') }}</td>
                     <td style="padding: 1rem;">
                         <span style="font-weight: 500;">{{ $transaction->user->name ?? $transaction->vehicle->user->name ?? 'Unknown User' }}</span>
                     </td>

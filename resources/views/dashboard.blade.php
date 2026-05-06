@@ -42,8 +42,8 @@
         }
         @media print {
             body * { visibility: hidden; }
-            #parkingTicket, #parkingTicket * { visibility: visible; }
-            #parkingTicket {
+            #printableReceipt, #printableReceipt * { visibility: visible; }
+            #printableReceipt {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -1154,9 +1154,9 @@
                         <i class="fas fa-home"></i>
                         <span class="nav-text">Dashboard</span>
                     </a>
-                    <a href="#" class="nav-item" data-page="parking">
-                        <i class="fas fa-car"></i>
-                        <span class="nav-text">My Parking</span>
+                    <a href="#" class="nav-item" data-page="parking" onclick="showPage('parking')">
+                        <div class="nav-icon"><i class="fas fa-car"></i></div>
+                        <span class="nav-text">Parking Availability</span>
                     </a>
                     <a href="#" class="nav-item" data-page="history">
                         <i class="fas fa-history"></i>
@@ -1194,13 +1194,7 @@
                     <button class="menu-toggle" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="header-logo lg:hidden">
-                        <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 30px; height: 30px; object-fit: cover; border-radius: 6px;">
-                    </div>
-                    <div class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search parking slots, history..." id="searchInput">
-                    </div>
+                    <div style="flex: 1;"></div>
                 </div>
                 <div class="header-right">
                     <button class="notification-btn" onclick="toggleNotifications(event)">
@@ -1363,27 +1357,7 @@
                 </section>
 
                 <section class="page-section hidden" id="page-parking">
-                    <div class="parking-section">
-
-                        <div id="noActiveSessionMessage" style="display: block;">
-                            <div class="section-header">
-                                <h2 class="section-title">My Parking</h2>
-                            </div>
-                            <div style="text-align: center; padding: 6rem 3rem; background: var(--card-bg); border-radius: 1.5rem; border: 1px dashed var(--border-color); margin-top: 1rem;">
-                                <div style="width: 100px; height: 100px; background: var(--light-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
-                                    <i class="fas fa-parking" style="font-size: 3rem; color: var(--text-secondary); opacity: 0.5;"></i>
-                                </div>
-                                <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-primary);">No Active Sessions</h3>
-                                <p style="color: var(--text-secondary); margin-bottom: 2.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">You are not currently parked. Find an available slot on the dashboard to start a new session.</p>
-                                <button class="btn btn-primary" style="padding: 1rem 2rem; font-weight: 700; border-radius: 0.75rem;" onclick="showPage('dashboard')">
-                                    <i class="fas fa-search" style="margin-right: 0.5rem;"></i>
-                                    Browse Available Slots
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="parking-section" id="parkingAvailabilityGrid" style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                    <div class="parking-section" id="parkingAvailabilityGrid">
                         <div class="section-header">
                             <h2 class="section-title">Parking Availability</h2>
                             <div class="parking-stats">
@@ -1394,6 +1368,10 @@
                                 <div class="stat-item">
                                     <div class="stat-dot occupied"></div>
                                     <span>Occupied</span>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-dot reserved"></div>
+                                    <span>Reserved</span>
                                 </div>
                             </div>
                         </div>
@@ -1413,14 +1391,20 @@
                             <h2 class="section-title">Full Parking History</h2>
                         </div>
                         <div class="history-controls">
-                            <input type="text" class="search-input" placeholder="Search by vehicle or slot..." id="fullHistorySearch">
-                            <select class="filter-select" id="fullHistoryFilter">
-                                <option value="">All Time</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                                <option value="year">This Year</option>
-                            </select>
+                            <div class="search-box" style="position: relative; flex: 1;">
+                                <label for="fullHistorySearch" class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">Search History</label>
+                                <input type="text" class="search-input" placeholder="Search by vehicle or slot..." id="fullHistorySearch" autocomplete="off">
+                            </div>
+                            <div class="filter-box" style="position: relative;">
+                                <label for="fullHistoryFilter" class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">Filter History</label>
+                                <select class="filter-select" id="fullHistoryFilter" autocomplete="off">
+                                    <option value="all">All Transactions</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="year">This Year</option>
+                                </select>
+                            </div>
                             <button class="btn btn-secondary" onclick="exportFullHistory()">
                                 <i class="fas fa-download"></i>
                                 Export CSV
@@ -1504,34 +1488,35 @@
                                 Add Payment Method
                             </button>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                            <div class="overview-card" style="cursor: pointer;" onclick="showNotification('Card payment selected', 'info')">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;" id="paymentMethodsGrid">
+                            @forelse($paymentMethods as $method)
+                            <div class="overview-card" style="cursor: pointer; border-left: 4px solid {{ $method->is_primary ? 'var(--primary-color)' : 'transparent' }};">
                                 <div class="overview-header">
-                                    <div class="overview-icon icon-primary">
-                                        <i class="fas fa-credit-card"></i>
+                                    <div class="overview-icon {{ $method->type === 'card' ? 'icon-primary' : ($method->type === 'ewallet' ? 'icon-warning' : 'icon-success') }}">
+                                        <i class="fas {{ $method->type === 'card' ? 'fa-credit-card' : ($method->type === 'ewallet' ? 'fa-wallet' : 'fa-university') }}"></i>
                                     </div>
+                                    @if($method->is_primary)
+                                        <span class="badge badge-active" style="font-size: 0.6rem;">Primary</span>
+                                    @endif
                                 </div>
-                                <div class="overview-value" style="font-size: 1.25rem;">Credit Card</div>
-                                <div class="overview-label">**** **** **** 4242</div>
-                            </div>
-                            <div class="overview-card" style="cursor: pointer;" onclick="showNotification('E-Wallet selected', 'info')">
-                                <div class="overview-header">
-                                    <div class="overview-icon icon-warning">
-                                        <i class="fas fa-wallet"></i>
-                                    </div>
+                                <div class="overview-value" style="font-size: 1.25rem;">
+                                    @if(strtolower($method->provider) === 'gcash') GCash
+                                    @elseif(strtolower($method->provider) === 'paymaya') PayMaya
+                                    @elseif(strtolower($method->provider) === 'grabpay') GrabPay
+                                    @else {{ ucfirst($method->provider) }}
+                                    @endif
                                 </div>
-                                <div class="overview-value" style="font-size: 1.25rem;">E-Wallet</div>
-                                <div class="overview-label">Balance: ₱45.50</div>
+                                <div class="overview-label">{{ $method->account_number }}</div>
                             </div>
-                            <div class="overview-card" style="cursor: pointer;" onclick="showNotification('Cash payment selected', 'info')">
-                                <div class="overview-header">
-                                    <div class="overview-icon icon-success">
-                                        <i class="fas fa-money-bill"></i>
-                                    </div>
+                            @empty
+                            <div class="overview-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                                <div class="overview-icon" style="margin: 0 auto 1rem; background: var(--light-bg);">
+                                    <i class="fas fa-credit-card" style="color: var(--text-secondary); opacity: 0.5;"></i>
                                 </div>
-                                <div class="overview-value" style="font-size: 1.25rem;">Cash</div>
-                                <div class="overview-label">Pay at exit</div>
+                                <div class="overview-value" style="font-size: 1.1rem; color: var(--text-secondary);">No payment methods added</div>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">Add a payment method to speed up your future bookings</p>
                             </div>
+                            @endforelse
                         </div>
 
                         <div class="section-header">
@@ -1717,12 +1702,12 @@
             </div>
             <form id="bookingForm">
                 <div class="form-group">
-                    <label class="form-label">Selected Slot</label>
-                    <input type="text" class="form-input" id="selectedSlotInput" readonly>
+                    <label for="selectedSlotInput" class="form-label">Selected Slot</label>
+                    <input type="text" class="form-input" id="selectedSlotInput" readonly autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Vehicle</label>
-                    <select class="form-input" id="vehicleSelect" required>
+                    <label for="vehicleSelect" class="form-label">Vehicle</label>
+                    <select class="form-input" id="vehicleSelect" required autocomplete="off">
                         <option value="">Select Vehicle</option>
                         @foreach($userVehicles as $vehicle)
                             <option value="{{ $vehicle->id }}">{{ $vehicle->license_plate }} - {{ $vehicle->make }} {{ $vehicle->model }}</option>
@@ -1730,8 +1715,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Duration</label>
-                    <select class="form-input" id="durationSelect" required>
+                    <label for="durationSelect" class="form-label">Duration</label>
+                    <select class="form-input" id="durationSelect" required autocomplete="off">
                         <option value="">Select Duration</option>
                         @for($i = 1; $i <= 10; $i++)
                             <option value="{{ $i }}">{{ $i }} Hour{{ $i > 1 ? 's' : '' }}</option>
@@ -1739,8 +1724,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Estimated Cost</label>
-                    <input type="text" class="form-input" id="estimatedCost" readonly value="₱0.00">
+                    <label for="estimatedCost" class="form-label">Estimated Cost</label>
+                    <input type="text" class="form-input" id="estimatedCost" readonly value="₱0.00" autocomplete="off">
                 </div>
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('bookingModal')">
@@ -1782,19 +1767,9 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Payment Method</label>
-                    <div class="payment-methods">
-                        <div class="payment-method" data-method="card" onclick="selectPaymentMethod('card')">
-                            <i class="fas fa-credit-card"></i>
-                            <div>Card</div>
-                        </div>
-                        <div class="payment-method" data-method="wallet" onclick="selectPaymentMethod('wallet')">
-                            <i class="fas fa-wallet"></i>
-                            <div>E-Wallet</div>
-                        </div>
-                        <div class="payment-method" data-method="cash" onclick="selectPaymentMethod('cash')">
-                            <i class="fas fa-money-bill"></i>
-                            <div>Cash</div>
+                    <div id="savedMethodsContainer" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">Payment Method</label>
+                        <div class="payment-methods" id="savedMethodsGrid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom: 1rem;">
                         </div>
                     </div>
                 </div>
@@ -1812,6 +1787,87 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    {{-- ===== PARKING RECEIPT MODAL ===== --}}
+    <div class="modal" id="receiptModal">
+        <div class="modal-content" id="receiptContent" style="max-width: 480px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 1.5rem; border-bottom: 2px solid var(--primary-color);">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-parking" style="color: white; font-size: 1.1rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: white; letter-spacing: 1px;">ParkMaster</div>
+                        <div style="font-size: 0.7rem; color: var(--primary-color); letter-spacing: 2px; text-transform: uppercase;">Official Parking Receipt</div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeModal('receiptModal')" style="color: white;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div style="padding: 1.5rem; background: var(--card-bg);">
+                {{-- Transaction ID & Date --}}
+                <div style="text-align: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border-color);">
+                    <div id="receiptTxnId" style="font-size: 1.1rem; font-weight: 700; color: var(--primary-color); letter-spacing: 2px;">TXN-000000</div>
+                    <div id="receiptDate" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;"></div>
+                </div>
+
+                {{-- Detail Rows --}}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-user" style="width: 16px; margin-right: 0.5rem;"></i>Customer</span>
+                        <strong id="receiptUser" style="font-size: 0.9rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-car" style="width: 16px; margin-right: 0.5rem;"></i>Vehicle</span>
+                        <strong id="receiptVehicle" style="font-size: 0.9rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-parking" style="width: 16px; margin-right: 0.5rem;"></i>Slot</span>
+                        <strong id="receiptSlot" style="font-size: 0.9rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-sign-in-alt" style="width: 16px; margin-right: 0.5rem;"></i>Entry Time</span>
+                        <strong id="receiptEntry" style="font-size: 0.9rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-sign-out-alt" style="width: 16px; margin-right: 0.5rem;"></i>Exit Time</span>
+                        <strong id="receiptExit" style="font-size: 0.9rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-clock" style="width: 16px; margin-right: 0.5rem;"></i>Duration</span>
+                        <strong id="receiptDuration" style="font-size: 0.9rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fas fa-wallet" style="width: 16px; margin-right: 0.5rem;"></i>Payment Method</span>
+                        <strong id="receiptMethod" style="font-size: 0.9rem;"></strong>
+                    </div>
+                </div>
+
+                {{-- Total --}}
+                <div style="background: linear-gradient(135deg, var(--primary-color), #ff6b35); border-radius: 0.75rem; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <span style="color: white; font-weight: 600; font-size: 1rem;">Total Amount Paid</span>
+                    <span id="receiptTotal" style="color: white; font-weight: 800; font-size: 1.5rem;">₱0.00</span>
+                </div>
+
+                {{-- Footer --}}
+                <div style="text-align: center; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary);">Thank you for using ParkMaster!</p>
+                    <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem;">Keep this receipt for your records.</p>
+                </div>
+            </div>
+
+            <div class="btn-group" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color);" id="receiptButtons">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('receiptModal')">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printReceipt()">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1872,8 +1928,8 @@
             </div>
             <form id="addPaymentForm">
                 <div class="form-group">
-                    <label class="form-label">Payment Type *</label>
-                    <select class="form-input" id="paymentType" required>
+                    <label for="paymentType" class="form-label">Payment Type *</label>
+                    <select class="form-input" id="paymentType" required autocomplete="off">
                         <option value="">Select Payment Type</option>
                         <option value="card">Credit/Debit Card</option>
                         <option value="ewallet">E-Wallet (PayPal, GCash, etc.)</option>
@@ -1882,28 +1938,28 @@
                 </div>
                 <div id="cardPaymentFields" style="display: none;">
                     <div class="form-group">
-                        <label class="form-label">Card Number *</label>
-                        <input type="text" class="form-input" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                        <label for="cardNumber" class="form-label">Card Number *</label>
+                        <input type="text" class="form-input" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Cardholder Name *</label>
-                        <input type="text" class="form-input" id="cardHolder" placeholder="John Doe">
+                        <label for="cardHolder" class="form-label">Cardholder Name *</label>
+                        <input type="text" class="form-input" id="cardHolder" placeholder="John Doe" autocomplete="cc-name">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
-                            <label class="form-label">Expiry Date *</label>
-                            <input type="text" class="form-input" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                            <label for="expiryDate" class="form-label">Expiry Date *</label>
+                            <input type="text" class="form-input" id="expiryDate" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">CVV *</label>
-                            <input type="text" class="form-input" id="cvv" placeholder="123" maxlength="4">
+                            <label for="cvv" class="form-label">CVV *</label>
+                            <input type="text" class="form-input" id="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
                         </div>
                     </div>
                 </div>
                 <div id="ewalletFields" style="display: none;">
                     <div class="form-group">
-                        <label class="form-label">E-Wallet Provider *</label>
-                        <select class="form-input" id="ewalletProvider">
+                        <label for="ewalletProvider" class="form-label">E-Wallet Provider *</label>
+                        <select class="form-input" id="ewalletProvider" autocomplete="off">
                             <option value="">Select Provider</option>
                             <option value="paypal">PayPal</option>
                             <option value="gcash">GCash</option>
@@ -1913,18 +1969,18 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Account Number/Email *</label>
-                        <input type="text" class="form-input" id="ewalletAccount" placeholder="Enter account details">
+                        <label for="ewalletAccount" class="form-label">Account Number/Email *</label>
+                        <input type="text" class="form-input" id="ewalletAccount" placeholder="Enter account details" autocomplete="email">
                     </div>
                 </div>
                 <div id="bankFields" style="display: none;">
                     <div class="form-group">
-                        <label class="form-label">Bank Name *</label>
-                        <input type="text" class="form-input" id="bankName" placeholder="Bank of America, Chase...">
+                        <label for="bankName" class="form-label">Bank Name *</label>
+                        <input type="text" class="form-input" id="bankName" placeholder="Bank of America, Chase..." autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Account Number *</label>
-                        <input type="text" class="form-input" id="bankAccount" placeholder="Enter account number">
+                        <label for="bankAccount" class="form-label">Account Number *</label>
+                        <input type="text" class="form-input" id="bankAccount" placeholder="Enter account number" autocomplete="off">
                     </div>
                 </div>
                 <div class="btn-group">
@@ -2021,23 +2077,23 @@
                 @csrf
                 @method('put')
                 <div class="form-group">
-                    <label class="form-label">Current Password</label>
+                    <label for="current_password" class="form-label">Current Password</label>
                     <div style="position: relative;">
-                        <input type="password" name="current_password" id="current_password" class="form-input" required>
+                        <input type="password" name="current_password" id="current_password" class="form-input" required autocomplete="current-password">
                         <i class="fas fa-eye" id="toggleCurrentPassword" onclick="togglePasswordVisibility('current_password', 'toggleCurrentPassword')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light);"></i>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">New Password</label>
+                    <label for="password" class="form-label">New Password</label>
                     <div style="position: relative;">
-                        <input type="password" name="password" id="password" class="form-input" required>
+                        <input type="password" name="password" id="password" class="form-input" required autocomplete="new-password">
                         <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('password', 'togglePassword')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light);"></i>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Confirm New Password</label>
+                    <label for="password_confirmation" class="form-label">Confirm New Password</label>
                     <div style="position: relative;">
-                        <input type="password" name="password_confirmation" id="password_confirmation" class="form-input" required>
+                        <input type="password" name="password_confirmation" id="password_confirmation" class="form-input" required autocomplete="new-password">
                         <i class="fas fa-eye" id="toggleConfirmPassword" onclick="togglePasswordVisibility('password_confirmation', 'toggleConfirmPassword')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light);"></i>
                     </div>
                 </div>
@@ -2089,81 +2145,6 @@
         </div>
     </div>
 
-    <div class="modal" id="ticketModal">
-        <div class="modal-content" style="max-width: 400px; padding: 0; border-radius: 1rem; overflow: hidden; max-height: 95vh; display: flex; flex-direction: column;">
-            <div style="overflow-y: auto; flex: 1;">
-            <div id="parkingTicket" style="padding: 2.5rem; background: white; color: #1b1b18; font-family: 'Courier New', Courier, monospace; border-bottom: 1px solid #eee;">
-                <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
-                    <div style="background: #f53003; color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
-                        <i class="fas fa-parking"></i>
-                    </div>
-                    <h2 style="margin: 0; color: #f53003; font-weight: 900; letter-spacing: 2px;">PARKMASTER</h2>
-                    <p style="font-size: 0.85rem; margin: 0.5rem 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Parking Receipt</p>
-                    <p style="font-size: 0.75rem; color: #706f6c;" id="ticketDate"></p>
-                </div>
-                
-                <div style="margin-bottom: 2rem; font-size: 0.9rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">CUSTOMER:</span>
-                        <span style="font-weight: 700; text-transform: uppercase;" id="ticketName">JOHN DOE</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">TRX ID:</span>
-                        <span style="font-weight: 700;" id="ticketId">#TRX-00000</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">SLOT:</span>
-                        <span style="font-weight: 700; font-size: 1.1rem;" id="ticketSlot">A-01</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">PLATE:</span>
-                        <span style="font-weight: 700;" id="ticketPlate">ABC-1234</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">VEHICLE:</span>
-                        <span style="font-weight: 700;" id="ticketVehicleDetails">Honda Civic</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">TYPE:</span>
-                        <span style="font-weight: 700; text-transform: uppercase;" id="ticketVehicleType">Car</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">ENTRY:</span>
-                        <span style="font-weight: 700;" id="ticketEntry">12:00 PM</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">HOURS:</span>
-                        <span style="font-weight: 700;" id="ticketDuration">2 Hours</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="color: #706f6c;">METHOD:</span>
-                        <span style="font-weight: 700; text-transform: uppercase;" id="ticketMethod">CASH</span>
-                    </div>
-                </div>
-                
-                <div style="border-top: 2px dashed #ccc; padding-top: 1.5rem; text-align: center;">
-                    <p style="font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 600; color: #706f6c;">AMOUNT PAID</p>
-                    <h1 style="font-size: 2.75rem; margin: 0; font-weight: 900; color: #1b1b18;" id="ticketTotal">₱100.00</h1>
-                </div>
-                
-                <div style="margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #706f6c;">
-                    <p style="margin-bottom: 0.25rem;">Thank you for your business!</p>
-                    <p>Scan this for exit validation</p>
-                    <div style="margin-top: 1.5rem; opacity: 0.8;">
-                        <i class="fas fa-barcode" style="font-size: 4rem; color: #1b1b18;"></i>
-                    </div>
-                </div>
-            </div>
-            </div>
-            
-            <div class="modal-footer" style="padding: 1.5rem; display: flex; gap: 1rem; background: #f9f9f9;">
-                <button class="btn btn-secondary" onclick="closeModal('ticketModal')" style="flex: 1; height: 50px; font-weight: 600;">Close</button>
-                <button class="btn btn-primary" onclick="window.print()" style="flex: 1.5; height: 50px; font-weight: 700; background: #1b1b18; border-color: #1b1b18;">
-                    <i class="fas fa-print" style="margin-right: 0.5rem;"></i> Print Ticket
-                </button>
-            </div>
-        </div>
-    </div>
 
     <div class="notification-container" id="notificationContainer"></div>
 
@@ -2187,8 +2168,90 @@
             selectedPaymentMethod: null,
             notifications: [],
             history: [],
-            historyLoaded: false
+            historyLoaded: false,
+            paymentMethods: @json($paymentMethods),
+            selectedSavedMethodId: null
         };
+
+        function addPaymentMethodToUI(method) {
+            const grid = document.getElementById('paymentMethodsGrid');
+            if (!grid) return;
+
+            const emptyState = grid.querySelector('.overview-card[style*="grid-column: 1 / -1"]');
+            if (emptyState) emptyState.remove();
+
+            const iconClass = method.type === 'card' ? 'icon-primary' : (method.type === 'ewallet' ? 'icon-warning' : 'icon-success');
+            const icon = method.type === 'card' ? 'fa-credit-card' : (method.type === 'ewallet' ? 'fa-wallet' : 'fa-university');
+
+            let providerName = method.provider;
+            if (providerName.toLowerCase() === 'gcash') providerName = 'GCash';
+            else if (providerName.toLowerCase() === 'paymaya') providerName = 'PayMaya';
+            else if (providerName.toLowerCase() === 'grabpay') providerName = 'GrabPay';
+            else providerName = providerName.charAt(0).toUpperCase() + providerName.slice(1);
+
+            const card = document.createElement('div');
+            card.className = 'overview-card';
+            card.style.cursor = 'pointer';
+            card.style.borderLeft = method.is_primary ? '4px solid var(--primary-color)' : 'transparent';
+            card.innerHTML = `
+                <div class="overview-header">
+                    <div class="overview-icon ${iconClass}">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    ${method.is_primary ? '<span class="badge badge-active" style="font-size: 0.6rem;">Primary</span>' : ''}
+                </div>
+                <div class="overview-value" style="font-size: 1.25rem;">${providerName}</div>
+                <div class="overview-label">${method.account_number}</div>
+            `;
+            grid.prepend(card);
+        }
+
+        function updateSavedMethodsInBooking() {
+            const container = document.getElementById('savedMethodsContainer');
+            if (!container) return;
+            
+            container.style.display = 'block';
+            const grid = document.getElementById('savedMethodsGrid');
+            grid.innerHTML = '';
+            
+            state.paymentMethods.forEach(method => {
+                let providerName = method.provider;
+                if (providerName.toLowerCase() === 'gcash') providerName = 'GCash';
+                else if (providerName.toLowerCase() === 'paymaya') providerName = 'PayMaya';
+                else if (providerName.toLowerCase() === 'grabpay') providerName = 'GrabPay';
+                else providerName = providerName.charAt(0).toUpperCase() + providerName.slice(1);
+
+                const item = document.createElement('div');
+                item.className = `payment-method ${state.selectedSavedMethodId == method.id ? 'selected' : ''}`;
+                item.onclick = () => selectSavedPaymentMethod(method);
+                item.innerHTML = `
+                    <i class="fas ${method.type === 'card' ? 'fa-credit-card' : (method.type === 'ewallet' ? 'fa-wallet' : 'fa-university')}"></i>
+                    <div>${providerName}</div>
+                    <div style="font-size: 0.6rem; opacity: 0.7;">${method.account_number}</div>
+                `;
+                grid.appendChild(item);
+            });
+
+            const cashItem = document.createElement('div');
+            cashItem.className = `payment-method ${state.selectedPaymentMethod === 'cash' ? 'selected' : ''}`;
+            cashItem.onclick = () => selectPaymentMethod('cash');
+            cashItem.innerHTML = `
+                <i class="fas fa-money-bill-wave"></i>
+                <div>Cash</div>
+                <div style="font-size: 0.6rem; opacity: 0.7;">Pay at exit</div>
+            `;
+            grid.appendChild(cashItem);
+        }
+
+        function selectSavedPaymentMethod(method) {
+            state.selectedPaymentMethod = method.type;
+            state.selectedSavedMethodId = method.id;
+            
+            document.querySelectorAll('.payment-methods .payment-method').forEach(el => el.classList.remove('selected'));
+            document.getElementById('cardDetails').style.display = 'none';
+            
+            updateSavedMethodsInBooking();
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeDashboard();
@@ -2206,6 +2269,7 @@
             }
 
             generateParkingGrid();
+            updateSavedMethodsInBooking();
         }
 
         function generateParkingGrid() {
@@ -2289,13 +2353,15 @@
 
             slots.forEach(slot => {
                 const status = slot.dataset.status;
-                stats[status]++;
+                if (stats.hasOwnProperty(status)) {
+                    stats[status]++;
+                }
             });
 
             const statElements = document.querySelectorAll('.stat-item span');
-            statElements[0].textContent = `${stats.available} Available`;
-            statElements[1].textContent = `${stats.occupied} Occupied`;
-            statElements[2].textContent = `${stats.reserved} Reserved`;
+            if (statElements.length >= 1) statElements[0].textContent = `${stats.available} Available`;
+            if (statElements.length >= 2) statElements[1].textContent = `${stats.occupied} Occupied`;
+            if (statElements.length >= 3) statElements[2].textContent = `${stats.reserved} Reserved`;
         }
 
         function loadHistoryData() {
@@ -2376,41 +2442,62 @@
         }
 
         function renderFullHistoryTable(history) {
-            const tbody = document.getElementById('fullHistoryTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+            const fullTbody = document.getElementById('fullHistoryTableBody');
+            const paymentTbody = document.getElementById('historyTableBody');
+            
+            if (fullTbody) fullTbody.innerHTML = '';
+            if (paymentTbody) paymentTbody.innerHTML = '';
 
             if (!history || history.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text-secondary)"><i class="fas fa-history" style="font-size:2rem;margin-bottom:1rem;display:block"></i><p>No parking history found</p></td></tr>`;
+                const noDataHtml = `<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--text-secondary)"><i class="fas fa-history" style="font-size:2rem;margin-bottom:1rem;display:block"></i><p>No parking history found</p></td></tr>`;
+                if (fullTbody) fullTbody.innerHTML = noDataHtml;
+                if (paymentTbody) paymentTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:3rem;color:var(--text-secondary)"><p>No payment records yet</p></td></tr>`;
                 return;
             }
 
             history.forEach(log => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${log.date}</td>
-                    <td>${log.slot}</td>
-                    <td>${log.vehicle}</td>
-                    <td>${log.entry_time || 'N/A'}</td>
-                    <td>${log.exit_time || 'N/A'}</td>
-                    <td>${log.duration}</td>
-                    <td>${log.amount}</td>
-                    <td>${log.method || 'Cash'}</td>
-                    <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${log.status}</span></td>
-                `;
-                tbody.appendChild(row);
+                if (fullTbody) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${log.date}</td>
+                        <td>${log.slot}</td>
+                        <td>${log.vehicle}</td>
+                        <td>${log.entry_time || 'N/A'}</td>
+                        <td>${log.exit_time || 'N/A'}</td>
+                        <td>${log.duration}</td>
+                        <td>${log.amount}</td>
+                        <td>${log.method || 'Cash'}</td>
+                        <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${log.status}</span></td>
+                    `;
+                    fullTbody.appendChild(row);
+                }
+
+                if (paymentTbody) {
+                    const payRow = document.createElement('tr');
+                    payRow.innerHTML = `
+                        <td>${log.date}</td>
+                        <td>Parking Fee (${log.vehicle} - ${log.slot})</td>
+                        <td style="color: var(--primary-color); font-weight: 600;">${log.amount}</td>
+                        <td>${log.method || 'Cash'}</td>
+                        <td><span class="parking-status" style="background:rgba(16,185,129,.1);color:var(--success-color)">${log.status}</span></td>
+                    `;
+                    paymentTbody.appendChild(payRow);
+                }
             });
         }
 
         function startTimer() {
+            const timerSec = document.getElementById('timerSection');
+            const noSessionMsg = document.getElementById('noActiveSessionMessage');
+
             if (!state.currentSession) {
-                document.getElementById('timerSection').style.display = 'none';
-                document.getElementById('noActiveSessionMessage').style.display = 'block';
+                if (timerSec) timerSec.style.display = 'none';
+                if (noSessionMsg) noSessionMsg.style.display = 'block';
                 return;
             }
             
-            document.getElementById('timerSection').style.display = 'block';
-            document.getElementById('noActiveSessionMessage').style.display = 'none';
+            if (timerSec) timerSec.style.display = 'block';
+            if (noSessionMsg) noSessionMsg.style.display = 'none';
             
             document.getElementById('timerSlot').textContent = state.currentSession.slot_number || (state.currentSession.parking_slot ? state.currentSession.parking_slot.slot_number : '-');
             document.getElementById('timerPlate').textContent = state.currentSession.license_plate || (state.currentSession.vehicle ? state.currentSession.vehicle.license_plate : '-');
@@ -2433,7 +2520,8 @@
                 
                 if (diff <= 0) {
                     clearInterval(state.timer);
-                    document.getElementById('timerDisplay').textContent = '00:00:00';
+                    const timerDisplay = document.getElementById('timerDisplay');
+                    if (timerDisplay) timerDisplay.textContent = '00:00:00';
                     showNotification('Your parking session has expired!', 'warning');
                     return;
                 }
@@ -2442,15 +2530,19 @@
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
                 
-                document.getElementById('timerDisplay').textContent = 
-                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                const timerDisplay = document.getElementById('timerDisplay');
+                if (timerDisplay) {
+                    timerDisplay.textContent = 
+                        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
                 
                 const entryTime = new Date(state.currentSession.entry_time);
                 const elapsedMs = Math.max(0, now - entryTime);
                 const elapsedMinutes = Math.floor(elapsedMs / 60000);
-                
-                const currentFee = elapsedMinutes * (hourlyRate / 60);
-                document.getElementById('timerFee').textContent = `₱${parseFloat(currentFee).toFixed(2)}`;
+                const resolvedRate = isNaN(hourlyRate) ? parseFloat(state.parkingSlots.find(s => s.id == state.currentSession.slot_id)?.hourly_rate || 0) : hourlyRate;
+                const currentFee = elapsedMinutes * (resolvedRate / 60);
+                const timerFee = document.getElementById('timerFee');
+                if (timerFee) timerFee.textContent = `₱${parseFloat(currentFee || 0).toFixed(2)}`;
             }, 1000);
         }
 
@@ -2524,9 +2616,6 @@
                 updateEstimatedCost();
             });
 
-            document.getElementById('searchInput').addEventListener('input', function(e) {
-                handleSearch(e.target.value);
-            });
 
 
             const fullHistorySearch = document.getElementById('fullHistorySearch');
@@ -2572,16 +2661,55 @@
                 submitFirstPayment();
             });
 
-            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitChangePassword();
-            });
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            if (changePasswordForm) {
+                changePasswordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitChangePassword();
+                });
+            }
 
-            document.getElementById('editProfileForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitEditProfile();
-            });
+            const editProfileForm = document.getElementById('editProfileForm');
+            if (editProfileForm) {
+                editProfileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitEditProfile();
+                });
+            }
 
+            const extendSessionForm = document.getElementById('extendSessionForm');
+            if (extendSessionForm) {
+                extendSessionForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const hours = document.getElementById('extendHours').value;
+                    showNotification('Extending session...', 'info');
+                    const formData = new FormData();
+                    formData.append('session_id', state.currentSession.id);
+                    formData.append('additional_hours', hours);
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                    fetch('/user/extend', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification(data.message, 'success');
+                            closeModal('extendSessionModal');
+                            const oldExitTime = new Date(state.currentSession.exit_time);
+                            state.currentSession.exit_time = new Date(oldExitTime.getTime() + (parseInt(hours) * 60 * 60 * 1000));
+                            startTimer();
+                        } else {
+                            showNotification(data.message, 'error');
+                        }
+                    })
+                    .catch(() => showNotification('Failed to extend session.', 'error'));
+                });
+            }
         }
 
         function submitEditProfile() {
@@ -2708,14 +2836,15 @@
 
         function selectPaymentMethod(method) {
             state.selectedPaymentMethod = method;
-            
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            document.querySelector(`[data-method="${method}"]`).classList.add('selected');
-            
+            state.selectedSavedMethodId = null;
+
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            const el = document.querySelector(`[data-method="${method}"]`);
+            if (el) el.classList.add('selected');
+
             document.getElementById('cardDetails').style.display = method === 'card' ? 'block' : 'none';
+
+            updateSavedMethodsInBooking();
         }
 
         function processPayment() {
@@ -2760,32 +2889,65 @@
                     updateOverviewCards();
                     startTimer();
 
-                    setTimeout(() => {
+                    try {
                         const now = new Date();
                         const durationSelect = document.getElementById('durationSelect');
-                        const durationText = durationSelect ? durationSelect.options[durationSelect.selectedIndex].text : '1 Hour';
-                        const estimatedCost = document.getElementById('estimatedCost').value;
+                        const durationText = (durationSelect && durationSelect.selectedIndex >= 0) 
+                            ? durationSelect.options[durationSelect.selectedIndex].text 
+                            : '1 Hour';
+                        
+                        const estimatedCostEl = document.getElementById('estimatedCost');
+                        const estimatedCost = estimatedCostEl ? estimatedCostEl.value : '₱0.00';
+                        
                         const vehicleSelect = document.getElementById('vehicleSelect');
-                        const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
-                        const fullVehicleText = selectedOption.text;
-                        const plateNumber = fullVehicleText.split('-')[0].trim();
-                        const makeModel = fullVehicleText.split('-')[1]?.trim() || 'N/A';
-                        const vehicleType = userVehiclesData[vehicleSelect.value]?.type || 'Car';
+                        let plateNumber = 'N/A';
+                        let makeModel = 'N/A';
+                        let vehicleType = 'Car';
+                        
+                        if (vehicleSelect && vehicleSelect.selectedIndex >= 0) {
+                            const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
+                            const fullVehicleText = selectedOption.text;
+                            if (fullVehicleText.includes(' - ')) {
+                                plateNumber = fullVehicleText.split(' - ')[0].trim();
+                                makeModel = fullVehicleText.split(' - ')[1]?.trim() || 'N/A';
+                            } else {
+                                plateNumber = fullVehicleText;
+                            }
+                            vehicleType = userVehiclesData[vehicleSelect.value]?.type || 'Car';
+                        }
 
-                        document.getElementById('ticketDate').textContent = now.toLocaleString();
-                        document.getElementById('ticketName').textContent = state.currentUser.name;
-                        document.getElementById('ticketId').textContent = `#TRX-${data.parking_session.id.toString().padStart(5, '0')}`;
-                        document.getElementById('ticketSlot').textContent = data.parking_session.slot_number;
+                        const durationHours = (durationSelect && durationSelect.selectedIndex >= 0) 
+                            ? parseInt(durationSelect.value) 
+                            : 1;
+                        const exitTime = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
+                        const trxId = `#TRX-${(data.parking_session?.id || 0).toString().padStart(5, '0')}`;
+
+                        document.getElementById('ticketDate').textContent = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        document.getElementById('ticketName').textContent = state.currentUser.name || 'Guest User';
+                        document.getElementById('ticketId').textContent = trxId;
+                        document.getElementById('ticketSlot').textContent = data.parking_session?.slot_number || 'N/A';
                         document.getElementById('ticketPlate').textContent = plateNumber;
-                        document.getElementById('ticketVehicleDetails').textContent = makeModel;
                         document.getElementById('ticketVehicleType').textContent = vehicleType;
-                        document.getElementById('ticketEntry').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        document.getElementById('ticketEntry').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true});
+                        document.getElementById('ticketExit').textContent = exitTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true});
                         document.getElementById('ticketDuration').textContent = durationText;
                         document.getElementById('ticketTotal').textContent = estimatedCost;
-                        document.getElementById('ticketMethod').textContent = state.selectedPaymentMethod || 'CASH';
+                        document.getElementById('ticketMethod').textContent = state.selectedPaymentMethod === 'wallet' ? 'E-WALLET' : (state.selectedPaymentMethod || 'CASH').toUpperCase();
+                        
+                        const qrImg = document.getElementById('ticketQR');
+                        if (qrImg) {
+                            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PARKMASTER-VERIFY-${trxId}`;
+                        }
 
                         openModal('ticketModal');
-                    }, 500);
+                        closeModal('paymentModal');
+                        closeModal('bookingModal');
+                    } catch (err) {
+                        console.error('Error generating ticket:', err);
+                        showNotification('Payment successful, but failed to display receipt.', 'warning');
+                        closeModal('paymentModal');
+                        closeModal('bookingModal');
+                    }
                 } else {
                     showNotification(data.message, 'error');
                 }
@@ -2806,12 +2968,18 @@
             document.getElementById('ticketId').textContent = `#TRX-${(log.id || 0).toString().padStart(5, '0')}`;
             document.getElementById('ticketSlot').textContent = log.slot;
             document.getElementById('ticketPlate').textContent = log.vehicle;
-            document.getElementById('ticketVehicleDetails').textContent = log.vehicle_details || 'N/A';
             document.getElementById('ticketVehicleType').textContent = log.vehicle_type || 'Car';
             document.getElementById('ticketEntry').textContent = log.entry_time;
+            document.getElementById('ticketExit').textContent = log.exit_time || 'N/A';
             document.getElementById('ticketDuration').textContent = log.duration;
             document.getElementById('ticketTotal').textContent = log.amount;
             document.getElementById('ticketMethod').textContent = (log.method || 'CASH').toUpperCase();
+            document.getElementById('ticketChange').textContent = '₱0.00';
+            
+            const qrImg = document.getElementById('ticketQR');
+            if (qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PARKMASTER-VERIFY-#TRX-${log.id}`;
+            }
             
             openModal('ticketModal');
         }
@@ -2819,14 +2987,12 @@
         function openExtendModal() {
             if (!state.currentSession) return;
             
-            const vehicleId = document.getElementById('vehicleSelect').value || Object.keys(userVehiclesData)[0];
-            const vehicle = userVehiclesData[vehicleId];
-            const vehicleType = String(vehicle?.type || 'car').toLowerCase();
+            const vehicleType = (state.currentSession.vehicle?.type || state.currentSession.vehicle_type || 'car').toLowerCase();
             
             let rate = parseFloat(parkingRatesData[vehicleType]);
             if (isNaN(rate)) {
                 const slot = state.parkingSlots.find(s => s.id == state.currentSession.slot_id);
-                rate = parseFloat(slot?.hourly_rate || 0.00);
+                rate = parseFloat(slot?.hourly_rate || 50.00);
             }
             
             document.getElementById('extendHours').value = "1";
@@ -2839,40 +3005,6 @@
             openModal('extendSessionModal');
         }
 
-        document.getElementById('extendSessionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const hours = document.getElementById('extendHours').value;
-            
-            showNotification('Extending session...', 'info');
-            
-            const formData = new FormData();
-            formData.append('session_id', state.currentSession.id);
-            formData.append('additional_hours', hours);
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-            
-            fetch('/user/extend', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    closeModal('extendSessionModal');
-                    
-                    const oldExitTime = new Date(state.currentSession.exit_time);
-                    state.currentSession.exit_time = new Date(oldExitTime.getTime() + (hours * 60 * 60 * 1000));
-                    
-                    startTimer();
-                } else {
-                    showNotification(data.message, 'error');
-                }
-            });
-        });
 
         function confirmEndSession() {
             if (!state.currentSession) return;
@@ -2903,12 +3035,19 @@
                         
                         startTimer();
                         updateOverviewCards();
-                        loadHistoryData(); 
-                    } else 
+                        loadHistoryData();
+                    } else {
                         showNotification(data.message, 'error');
                     }
                 });
             }
+        }
+
+        function printReceipt() {
+            const originalTitle = document.title;
+            document.title = "ParkMaster_Receipt";
+            window.print();
+            setTimeout(() => { document.title = originalTitle; }, 1000);
         }
 
         function refreshParkingGrid() {
@@ -2954,30 +3093,13 @@
                     
                     showNotification('Parking session ended. Thank you!', 'success');
                     
-                    addToHistory();
+                    loadHistoryData();
                 }, 1500);
             }
         }
 
 
-        function updateOverviewCards() {
-            const parkingCard = document.querySelectorAll('.overview-card')[1];
-            const status = parkingCard.querySelector('.parking-status');
-            const value = parkingCard.querySelector('.overview-value');
-            const label = parkingCard.querySelector('.overview-label');
-            
-            if (state.currentUser.status === 'parked') {
-                status.className = 'parking-status status-parked';
-                status.innerHTML = '<i class="fas fa-circle"></i> Parked';
-                value.textContent = state.currentUser.currentParking;
-                label.textContent = `Slot ${state.currentUser.currentParking} • Active`;
-            } else {
-                status.className = 'parking-status status-available';
-                status.innerHTML = '<i class="fas fa-circle"></i> Available';
-                value.textContent = 'No Active';
-                label.textContent = 'Not Currently Parked';
-            }
-        }
+
 
         function showNotifications() {
             showNotification('You have 3 new notifications', 'info');
@@ -3234,7 +3356,12 @@
                     isValid = false;
                     showNotification('Please fill in all card details', 'error');
                 }
-                paymentData = { ...paymentData, cardNumber, cardHolder, expiryDate, cvv };
+                // Determine card provider based on first digit
+                let cardProvider = 'Credit Card';
+                if (cardNumber.startsWith('4')) cardProvider = 'Visa';
+                else if (cardNumber.startsWith('5')) cardProvider = 'Mastercard';
+                
+                paymentData = { ...paymentData, card_number: cardNumber, cardHolder, expiryDate, cvv, card_provider: cardProvider };
             } else if (paymentType === 'ewallet') {
                 const provider = document.getElementById('ewalletProvider').value;
                 const account = document.getElementById('ewalletAccount').value;
@@ -3252,7 +3379,7 @@
                     isValid = false;
                     showNotification('Please fill in all bank details', 'error');
                 }
-                paymentData = { ...paymentData, bankName, bankAccount };
+                paymentData = { ...paymentData, provider: bankName, account: bankAccount, bankName, bankAccount };
             }
 
             if (!isValid) return;
@@ -3277,6 +3404,12 @@
                 if (data.success) {
                     showNotification('Payment method added successfully!', 'success');
                     closeModal('addPaymentModal');
+                    
+                    // Add to state and UI
+                    state.paymentMethods.unshift(data.payment_method);
+                    addPaymentMethodToUI(data.payment_method);
+                    updateSavedMethodsInBooking();
+                    
                     document.getElementById('addPaymentForm').reset();
                     document.getElementById('cardPaymentFields').style.display = 'none';
                     document.getElementById('ewalletFields').style.display = 'none';
@@ -3416,11 +3549,16 @@
             const dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('active');
             
-            document.onclick = function(e) {
+            const closeDropdown = (e) => {
                 if (!dropdown.contains(e.target)) {
                     dropdown.classList.remove('active');
+                    document.removeEventListener('click', closeDropdown);
                 }
             };
+            
+            if (dropdown.classList.contains('active')) {
+                document.addEventListener('click', closeDropdown);
+            }
         }
 
         function toggleTheme() {
@@ -3524,5 +3662,133 @@
             }
         }
     </script>
+
+    <div id="ticketModal" class="modal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 450px; border-radius: 1rem; overflow-y: auto; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <div id="printableReceipt" style="background: white; padding: 2.5rem; position: relative;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 5rem; font-weight: 900; color: rgba(16, 185, 129, 0.05); pointer-events: none; white-space: nowrap; text-transform: uppercase;">PAID & VERIFIED</div>
+
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 70px; height: 70px; background: white; border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(245, 48, 3, 0.3); border: 1px solid #eee;">
+                        <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <h2 style="margin: 0; color: #1b1b18; font-weight: 800; letter-spacing: -0.025em; font-size: 1.75rem;">PARKMASTER</h2>
+                    <p style="font-size: 0.85rem; color: #f53003; font-weight: 600; margin-top: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase;">Secure Parking Solutions</p>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 2rem; width: fit-content; margin-inline: auto;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <span style="color: #065f46; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">Payment Confirmed</span>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 1.5rem 0; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.7rem; color: #706f6c; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Transaction ID</p>
+                            <p style="font-weight: 700; color: #1b1b18; font-size: 0.95rem;" id="ticketId">#TRX-00000</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 0.7rem; color: #706f6c; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Date</p>
+                            <p style="font-weight: 700; color: #1b1b18; font-size: 0.95rem;" id="ticketDate">May 05, 2026</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Customer Name</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketName">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Parking Slot</span>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: #f53003;" id="ticketSlot">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Vehicle Plate</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketPlate">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Vehicle Type</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketVehicleType">-</span>
+                    </div>
+                    <div style="height: 1px; background: #f3f4f6; margin: 0.25rem 0;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Entry Time</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketEntry">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Exit Time (EST)</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketExit">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Duration</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketDuration">-</span>
+                    </div>
+                    <div style="height: 1px; background: #f3f4f6; margin: 0.25rem 0;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Payment Method</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #1b1b18;" id="ticketMethod">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #706f6c;">Payment Status</span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px; text-transform: uppercase;">Paid</span>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 2rem; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.9rem; font-weight: 600; color: #64748b;">Total Amount Paid</span>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: #1b1b18;" id="ticketTotal">₱0.00</span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <p style="font-size: 0.75rem; color: #64748b; font-weight: 500;">Please present this receipt to the attendant at the entrance.</p>
+                    <p style="font-size: 0.65rem; color: #cbd5e1; margin-top: 1rem;">© 2026 ParkMaster. All rights reserved.</p>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="padding: 1.5rem; display: flex; gap: 1rem; background: #f1f5f9; border-top: 1px solid #e2e8f0;">
+                <button class="btn btn-secondary" onclick="closeModal('ticketModal')" style="flex: 1; height: 48px; border-radius: 0.75rem; font-weight: 600; background: white; border: 1px solid #e2e8f0; color: #64748b;">Close</button>
+                <button class="btn btn-primary" onclick="printReceipt()" style="flex: 1.5; height: 48px; border-radius: 0.75rem; font-weight: 700; background: #1b1b18; border-color: #1b1b18; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @media print {
+            @page {
+                margin: 0;
+            }
+            body {
+                margin: 0;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #printableReceipt, #printableReceipt * {
+                visibility: visible;
+            }
+            #printableReceipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 50px 20px 20px 20px !important;
+            }
+            #ticketModal {
+                background: white !important;
+            }
+            .modal-content {
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .modal-footer {
+                display: none !important;
+            }
+        }
+    </style>
 </body>
 </html>

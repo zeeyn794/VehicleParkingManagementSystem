@@ -116,8 +116,8 @@ class DashboardController extends Controller
                     $log->parkingSlot->slot_number ?? 'N/A',
                     $log->vehicle->license_plate ?? 'N/A',
                     ucfirst($log->vehicle->type ?? 'Car'),
-                    $log->entry_time ? $log->entry_time->format('Y-m-d H:i:s') : '-',
-                    $log->exit_time ? $log->exit_time->format('Y-m-d H:i:s') : '-',
+                    $log->entry_time ? $log->entry_time->format('Y-m-d h:i:s A') : '-',
+                    $log->exit_time ? $log->exit_time->format('Y-m-d h:i:s A') : '-',
                     number_format($log->total_fee, 2)
                 ]);
             }
@@ -208,7 +208,7 @@ class DashboardController extends Controller
             foreach ($transactions as $t) {
                 fputcsv($file, [
                     'TRX-' . str_pad($t->id, 5, '0', STR_PAD_LEFT),
-                    $t->created_at->format('Y-m-d H:i:s'),
+                    $t->created_at->format('Y-m-d h:i:s A'),
                     $t->user->name ?? $t->vehicle->user->name ?? 'Unknown User',
                     $t->parkingSlot->slot_number ?? 'N/A',
                     $t->license_plate ?? $t->vehicle->license_plate ?? 'N/A',

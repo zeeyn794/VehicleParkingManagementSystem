@@ -27,6 +27,7 @@ class ModernDashboardController extends Controller
                     ->where('is_active', true)
                     ->first();
                 $session->hourly_rate = $rate ? (float)$rate->hourly_rate : (float)($session->parkingSlot->hourly_rate ?? 50.00);
+                $session->formatted_method = $session->payment_method === 'wallet' ? 'E-Wallet' : ucfirst($session->payment_method ?? 'Cash');
                 return $session;
             }) : collect();
 
@@ -65,6 +66,8 @@ class ModernDashboardController extends Controller
             return [strtolower($item->vehicle_type) => $item->hourly_rate];
         });
         
+        $paymentMethods = $user ? $user->paymentMethods()->latest()->get() : collect();
+        
         $recentNotifications = $this->getLatestNotifications(5);
         $allNotificationsCount = $recentNotifications->count(); // In a real app, this would be unread count
 
@@ -78,6 +81,7 @@ class ModernDashboardController extends Controller
             'totalSpent',
             'totalSessions',
             'parkingRates',
+            'paymentMethods',
             'recentNotifications',
             'allNotificationsCount'
         ));
@@ -89,7 +93,7 @@ class ModernDashboardController extends Controller
             'slot_id' => 'required|exists:parking_slots,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'duration_hours' => 'required|integer|min:1|max:24',
-            'payment_method' => 'required|string|in:card,wallet,cash',
+            'payment_method' => 'required|string|in:card,wallet,cash,ewallet,bank',
         ]);
 
         $slot = ParkingSlot::findOrFail($request->slot_id);
@@ -147,7 +151,8 @@ class ModernDashboardController extends Controller
                 'entry_time' => $entryTime->toIso8601String(),
                 'exit_time' => $exitTime->toIso8601String(),
                 'total_fee' => $totalFee,
-                'hourly_rate' => $rate ? (float)$rate->hourly_rate : 50.00
+                'hourly_rate' => $rate ? (float)$rate->hourly_rate : 50.00,
+                'payment_method' => $parkingLog->payment_method === 'wallet' ? 'E-Wallet' : ucfirst($parkingLog->payment_method ?? 'cash')
             ]
         ]);
     }
@@ -171,7 +176,8 @@ class ModernDashboardController extends Controller
 
         $additionalHours = (int) $request->additional_hours;
         
-        $rate = \App\Models\ParkingRate::where('vehicle_type', $session->vehicle->type ?? 'car')
+        $type = strtolower($session->vehicle->type ?? 'car');
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $type)
             ->where('is_active', true)
             ->first()
             ?? \App\Models\ParkingRate::where('is_active', true)->first();
@@ -186,7 +192,7 @@ class ModernDashboardController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Parking time extended by {$additionalHours} hours!",
-            'new_exit_time' => $session->exit_time->format('H:i'),
+            'new_exit_time' => $session->exit_time->format('h:i A'),
             'additional_fee' => $additionalFee,
             'new_total_fee' => $session->total_fee
         ]);
@@ -211,7 +217,8 @@ class ModernDashboardController extends Controller
         $actualDuration = now()->diffInMinutes($session->entry_time);
         $actualHours = max(1, ceil($actualDuration / 60));
         
-        $rate = \App\Models\ParkingRate::where('vehicle_type', $session->vehicle->type ?? 'car')
+        $type = strtolower($session->vehicle->type ?? 'car');
+        $rate = \App\Models\ParkingRate::where('vehicle_type', $type)
             ->where('is_active', true)
             ->first()
             ?? \App\Models\ParkingRate::where('is_active', true)->first();
@@ -227,8 +234,19 @@ class ModernDashboardController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Parking session ended successfully!',
-            'final_fee' => $actualFee,
-            'duration' => $actualDuration
+            'receipt' => [
+                'transaction_id' => 'TXN-' . str_pad($session->id, 6, '0', STR_PAD_LEFT),
+                'date'           => $session->exit_time->format('M d, Y'),
+                'slot_number'    => $session->parkingSlot->slot_number ?? 'N/A',
+                'vehicle_plate'  => $session->vehicle->license_plate ?? 'N/A',
+                'vehicle_model'  => ($session->vehicle->make ?? '') . ' ' . ($session->vehicle->model ?? ''),
+                'entry_time'     => $session->entry_time->format('h:i:s A'),
+                'exit_time'      => $session->exit_time->format('h:i:s A'),
+                'duration'       => floor($actualDuration / 60) . 'h ' . ($actualDuration % 60) . 'm',
+                'fee'            => number_format($actualFee, 2),
+                'payment_method' => $session->payment_method === 'wallet' ? 'E-Wallet' : ucfirst($session->payment_method ?? 'Cash'),
+                'user_name'      => $user->name
+            ]
         ]);
     }
 
@@ -310,7 +328,7 @@ class ModernDashboardController extends Controller
                     $log->exit_time->format('H:i:s'),
                     $duration,
                     '₱' . number_format($log->total_fee, 2),
-                    ucfirst($log->payment_method ?? 'Cash'),
+                    $log->payment_method === 'wallet' ? 'E-Wallet' : ucfirst($log->payment_method ?? 'Cash'),
                     $log->exit_time > now() ? 'Active' : 'Completed'
                 ]);
             }
@@ -370,7 +388,7 @@ class ModernDashboardController extends Controller
                     'entry_time' => $record->entry_time->format('h:i:s A'),
                     'exit_time' => $record->exit_time ? $record->exit_time->format('h:i:s A') : '—',
                     'amount' => '₱' . number_format($record->total_fee, 2),
-                    'method' => ucfirst($record->payment_method ?? 'Cash'),
+                    'method' => $record->payment_method === 'wallet' ? 'E-Wallet' : ucfirst($record->payment_method ?? 'Cash'),
                     'status' => $record->exit_time > now() ? 'active' : 'completed'
                 ];
             })
@@ -415,12 +433,48 @@ class ModernDashboardController extends Controller
         $user = auth()->user();
         $paymentData = json_decode($request->payment_data, true);
 
+        // Reset other primary methods if this one is primary
+        if ($request->boolean('is_primary', false)) {
+            \App\Models\PaymentMethod::where('user_id', $user->id)->update(['is_primary' => false]);
+        }
+
+        $accountNumber = '';
+        $provider = '';
+
+        if ($request->payment_type === 'card') {
+            $lastFour = substr($paymentData['card_number'] ?? '0000', -4);
+            $accountNumber = '**** **** **** ' . $lastFour;
+            $provider = $paymentData['card_provider'] ?? 'Credit Card';
+            if (isset($paymentData['cardHolder'])) {
+                $accountNumber .= ' (' . $paymentData['cardHolder'] . ')';
+            }
+        } elseif ($request->payment_type === 'ewallet') {
+            $accountNumber = $paymentData['account'] ?? 'N/A';
+            $provider = ucfirst($paymentData['provider'] ?? 'E-Wallet');
+            if (strtolower($provider) === 'gcash') $provider = 'GCash';
+            elseif (strtolower($provider) === 'paymaya') $provider = 'PayMaya';
+            elseif (strtolower($provider) === 'grabpay') $provider = 'GrabPay';
+        } elseif ($request->payment_type === 'bank') {
+            $accountNumber = $paymentData['account'] ?? 'N/A';
+            $provider = $paymentData['provider'] ?? 'Bank';
+            if (empty($provider) || $provider === 'Bank') {
+                $provider = $paymentData['bankName'] ?? 'Bank';
+            }
+        }
+
+        $paymentMethod = \App\Models\PaymentMethod::create([
+            'user_id' => $user->id,
+            'type' => $request->payment_type,
+            'provider' => $provider,
+            'account_number' => $accountNumber,
+            'details' => $paymentData,
+            'is_primary' => $request->boolean('is_primary', false),
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Payment method added successfully!',
-            'payment_type' => $request->payment_type,
-            'is_primary' => $request->boolean('is_primary', false)
+            'payment_method' => $paymentMethod
         ]);
     }
 

@@ -53,6 +53,11 @@ class User extends Authenticatable
         return $this->hasMany(Vehicle::class);
     }
 
+    public function paymentMethods()
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
     public function isAdmin()
     {
         return $this->role === 'admin' || str_contains($this->email, 'admin');

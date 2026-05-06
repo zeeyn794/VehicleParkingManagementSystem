@@ -132,10 +132,7 @@
                         </div>
                         <h3 class="text-xl font-bold mb-4">Manage Your Stay</h3>
                         <p class="text-[#706f6c] dark:text-[#A1A09A] leading-relaxed">Monitor your parking duration and current fees in real-time. When you're ready to leave, simply end your session; the staff will be alerted to clear your slot for the next visitor.</p>
-                        
-
-                    <!-- Connecting Line (Desktop) -->
-                    <div class="hidden md:block absolute top-8 left-[20%] right-[20%] h-0.5 border-t-2 border-dashed border-[#19140015] dark:border-[#ffffff15] -z-0"></div>
+                    </div>
                 </div>
             </div>
         </section>
