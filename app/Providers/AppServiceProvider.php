@@ -43,8 +43,8 @@ class AppServiceProvider extends ServiceProvider
                     'type' => 'parking',
                     'title' => 'Parking Activity',
                     'message' => ($log->exit_time && $log->exit_time <= now()) 
-                        ? "{$log->vehicle->license_plate} has exited Slot {$log->parkingSlot->slot_number}."
-                        : "{$log->vehicle->license_plate} has parked in Slot {$log->parkingSlot->slot_number}.",
+                        ? ($log->vehicle->license_plate ?? 'A vehicle') . " has exited Slot " . ($log->parkingSlot->slot_number ?? 'N/A') . "."
+                        : ($log->vehicle->license_plate ?? 'A vehicle') . " has parked in Slot " . ($log->parkingSlot->slot_number ?? 'N/A') . ".",
                     'icon' => 'fas fa-parking',
                     'bg' => 'rgba(245, 48, 3, 0.1)',
                     'color' => 'var(--primary-color)',

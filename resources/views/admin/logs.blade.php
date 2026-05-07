@@ -44,7 +44,7 @@
                 @forelse($logs as $log)
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 1rem;">
-                        <span style="font-weight: 500;">{{ $log->user->name ?? 'Unknown User' }}</span>
+                        <span style="font-weight: 500;">{{ $log->user?->name ?? 'Unknown User' }}</span>
                     </td>
                     <td style="padding: 1rem; font-weight: 600;">{{ $log->parkingSlot->slot_number ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $log->vehicle->license_plate ?? 'N/A' }}</td>

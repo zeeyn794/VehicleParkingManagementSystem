@@ -18,7 +18,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Total Parking Slots</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">{{ $totalSlots }}</div>
+                <div class="overview-value" id="stat-total-slots" style="font-size: 2rem; font-weight: 700;">{{ $totalSlots }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Active parking spaces</div>
             </div>
             <div class="overview-icon icon-primary" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
@@ -30,7 +30,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Occupied Slots</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">{{ $occupied }}</div>
+                <div class="overview-value" id="stat-occupied" style="font-size: 2rem; font-weight: 700;">{{ $occupied }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Currently in use</div>
             </div>
             <div class="overview-icon icon-warning" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(245, 158, 11, 0.1); color: var(--warning-color);">
@@ -42,7 +42,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Available Slots</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">{{ $available }}</div>
+                <div class="overview-value" id="stat-available" style="font-size: 2rem; font-weight: 700;">{{ $available }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Ready for parking</div>
             </div>
             <div class="overview-icon icon-success" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
@@ -54,7 +54,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Total Earnings</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700;">₱{{ number_format($totalEarnings, 2) }}</div>
+                <div class="overview-value" id="stat-earnings" style="font-size: 2rem; font-weight: 700;">₱{{ number_format($totalEarnings, 2) }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Revenue from parking fees</div>
             </div>
             <div class="overview-icon icon-primary" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
@@ -105,4 +105,25 @@
         </div>
     </div>
 </section>
+@endsection
+
+@section('extra-js')
+<script>
+    const LIVE_STATS_URL = '{{ route("admin.live.stats") }}';
+
+    function fetchLiveStats() {
+        fetch(LIVE_STATS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(data => {
+                const el = id => document.getElementById(id);
+                if (el('stat-total-slots')) el('stat-total-slots').textContent = data.totalSlots;
+                if (el('stat-occupied'))    el('stat-occupied').textContent    = data.occupied;
+                if (el('stat-available'))   el('stat-available').textContent   = data.available;
+                if (el('stat-earnings'))    el('stat-earnings').textContent    = data.totalEarnings;
+            })
+            .catch(() => {});
+    }
+
+    setInterval(fetchLiveStats, 10000);
+</script>
 @endsection

@@ -46,16 +46,31 @@
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $slot->location }}</td>
                     <td style="padding: 1rem; color: var(--text-secondary);">{{ $slot->type ?? 'Standard' }}</td>
                     <td style="padding: 1rem;">
-                        <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; 
-                            background: {{ $slot->display_status === 'available' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }};
-                            color: {{ $slot->display_status === 'available' ? 'var(--success-color)' : 'var(--danger-color)' }};">
-                            {{ ucfirst($slot->display_status) }}
+                        @php
+                            $status = $slot->status ?? 'available';
+                            $badgeBg = match($status) {
+                                'available'   => 'rgba(16, 185, 129, 0.1)',
+                                'occupied'    => 'rgba(239, 68, 68, 0.1)',
+                                'maintenance' => 'rgba(245, 158, 11, 0.1)',
+                                default       => 'rgba(100, 116, 139, 0.1)',
+                            };
+                            $badgeColor = match($status) {
+                                'available'   => 'var(--success-color)',
+                                'occupied'    => 'var(--danger-color)',
+                                'maintenance' => 'var(--warning-color)',
+                                default       => 'var(--text-secondary)',
+                            };
+                        @endphp
+                        <span id="slot-badge-{{ $slot->id }}" data-slot-id="{{ $slot->id }}" style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
+                            background: {{ $badgeBg }}; color: {{ $badgeColor }}; display: inline-flex; align-items: center; gap: 0.375rem;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block;"></span>
+                            {{ ucfirst($status) }}
                         </span>
                     </td>
 
                     <td style="padding: 1rem;">
                         <div style="display: flex; gap: 0.5rem;">
-                            <button type="button" onclick="openEditModal({{ $slot->id }}, '{{ $slot->slot_number }}', '{{ $slot->location }}', '{{ $slot->type }}', '{{ $slot->display_status }}')" style="background: none; border: none; color: var(--primary-color); cursor: pointer;"><i class="fas fa-edit"></i></button>
+                            <button type="button" onclick="openEditModal({{ $slot->id }}, '{{ $slot->slot_number }}', '{{ $slot->location }}', '{{ $slot->type }}', '{{ $slot->status }}')" style="background: none; border: none; color: var(--primary-color); cursor: pointer;"><i class="fas fa-edit"></i></button>
                             <form action="{{ route('admin.slots.destroy', $slot->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this slot?');">
                                 @csrf
                                 @method('DELETE')
@@ -167,5 +182,31 @@
     }
 
     document.querySelector('.btn-primary').onclick = openModal;
+
+    const LIVE_SLOTS_URL = '{{ route("admin.live.slots") }}';
+
+    const STATUS_STYLES = {
+        available:   { bg: 'rgba(16, 185, 129, 0.1)', color: 'var(--success-color)' },
+        occupied:    { bg: 'rgba(239, 68, 68, 0.1)',  color: 'var(--danger-color)' },
+        maintenance: { bg: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning-color)' },
+    };
+
+    function fetchLiveSlots() {
+        fetch(LIVE_SLOTS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(data => {
+                data.slots.forEach(slot => {
+                    const badge = document.getElementById('slot-badge-' + slot.id);
+                    if (!badge) return;
+                    const style = STATUS_STYLES[slot.status] || STATUS_STYLES.available;
+                    badge.style.background = style.bg;
+                    badge.style.color = style.color;
+                    badge.lastChild.textContent = ' ' + slot.status.charAt(0).toUpperCase() + slot.status.slice(1);
+                });
+            })
+            .catch(() => {});
+    }
+
+    setInterval(fetchLiveSlots, 10000);
 </script>
 @endsection

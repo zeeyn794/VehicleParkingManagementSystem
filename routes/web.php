@@ -56,6 +56,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     Route::get('/rates', [\App\Http\Controllers\Admin\RateController::class, 'index'])->name('rates');
     Route::patch('/rates/{id}', [\App\Http\Controllers\Admin\RateController::class, 'update'])->name('rates.update');
+
+    Route::get('/live/stats', [\App\Http\Controllers\Admin\DashboardController::class, 'liveStats'])->name('live.stats');
+    Route::get('/live/slots', [\App\Http\Controllers\Admin\DashboardController::class, 'liveSlots'])->name('live.slots');
 });
 
 require __DIR__.'/auth.php';
