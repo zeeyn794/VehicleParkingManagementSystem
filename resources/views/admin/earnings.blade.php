@@ -18,7 +18,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Today's Earnings</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700; color: var(--success-color);">₱{{ number_format($todayEarnings, 2) }}</div>
+                <div class="overview-value" id="earn-today" style="font-size: 2rem; font-weight: 700; color: var(--success-color);">₱{{ number_format($todayEarnings, 2) }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Revenue collected today</div>
             </div>
             <div class="overview-icon icon-success" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
@@ -31,7 +31,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">This Month's Earnings</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">₱{{ number_format($monthEarnings, 2) }}</div>
+                <div class="overview-value" id="earn-month" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">₱{{ number_format($monthEarnings, 2) }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Revenue collected this month</div>
             </div>
             <div class="overview-icon icon-primary" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(245, 48, 3, 0.1); color: var(--primary-color);">
@@ -44,7 +44,7 @@
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <div class="overview-title" style="font-size: 1.125rem; font-weight: 600;">Overall Earnings</div>
-                <div class="overview-value" style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">₱{{ number_format($totalEarnings, 2) }}</div>
+                <div class="overview-value" id="earn-total" style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">₱{{ number_format($totalEarnings, 2) }}</div>
                 <div class="overview-label" style="color: var(--text-secondary); font-size: 0.875rem;">Total revenue to date</div>
             </div>
             <div class="overview-icon" style="width: 48px; height: 48px; border-radius: 0.125rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(100, 116, 139, 0.1); color: var(--text-primary);">
@@ -114,6 +114,28 @@
 
 @section('extra-js')
 <script>
+    const LIVE_STREAM_URL = '{{ route("admin.live.stream") }}';
+
+    function applyEarningsFromStream(stats) {
+        if (!stats) return;
+        const byId = (id) => document.getElementById(id);
+        if (byId('earn-today') && stats.todayEarnings) byId('earn-today').textContent = stats.todayEarnings;
+        if (byId('earn-month') && stats.monthEarnings) byId('earn-month').textContent = stats.monthEarnings;
+        if (byId('earn-total') && stats.totalEarnings) byId('earn-total').textContent = stats.totalEarnings;
+    }
+
+    (function initEarningsLive() {
+        if (!window.EventSource) return;
+
+        const es = new EventSource(LIVE_STREAM_URL);
+        es.addEventListener('live', (e) => {
+            try {
+                const payload = JSON.parse(e.data || '{}');
+                if (payload.stats) applyEarningsFromStream(payload.stats);
+            } catch (_) {}
+        });
+    })();
+
     function exportEarnings() {
         const search = document.querySelector('input[name="search"]').value;
         const url = `{{ route('admin.earnings.export') }}?search=${encodeURIComponent(search)}`;

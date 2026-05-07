@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DashboardController extends Controller
 {
@@ -166,34 +167,42 @@ class DashboardController extends Controller
     public function notifications()
     {
         $notifications = collect();
-        
-        // System Welcome (Admin)
+
         $notifications->push([
+            'type' => 'system',
             'title' => 'System Ready',
             'message' => 'Admin dashboard is fully operational and monitoring all slots.',
             'time' => now()->subHours(5),
             'icon' => 'fas fa-shield-alt',
-            'bg' => 'rgba(59, 130, 246, 0.1)',
-            'color' => 'var(--primary-color)'
+            'bg' => 'rgba(245, 48, 3, 0.08)',
+            'color' => 'var(--primary-color)',
         ]);
 
-        // Recent Activity based on Logs
-        $recentLogs = ParkingLog::with(['user', 'parkingSlot', 'vehicle'])
-            ->latest()
-            ->limit(8)
-            ->get();
-
-        foreach ($recentLogs as $log) {
-            $isExit = $log->exit_time && $log->exit_time <= now();
+        $users = User::where('role', '!=', 'admin')->latest()->limit(20)->get();
+        foreach ($users as $user) {
             $notifications->push([
-                'title' => $isExit ? 'Vehicle Exited' : 'New Parking Entry',
-                'message' => $isExit 
-                    ? "Vehicle {$log->vehicle->license_plate} has cleared Slot {$log->parkingSlot->slot_number}."
-                    : "Vehicle {$log->vehicle->license_plate} has occupied Slot {$log->parkingSlot->slot_number}.",
-                'time' => $isExit ? $log->exit_time : $log->entry_time,
-                'icon' => $isExit ? 'fas fa-sign-out-alt' : 'fas fa-sign-in-alt',
-                'bg' => $isExit ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                'color' => $isExit ? 'var(--success-color)' : 'var(--warning-color)'
+                'type' => 'user',
+                'title' => 'New User Registered',
+                'message' => "{$user->name} has joined the system.",
+                'time' => $user->created_at,
+                'icon' => 'fas fa-user-plus',
+                'bg' => 'rgba(34, 211, 238, 0.1)',
+                'color' => 'var(--secondary-color)',
+            ]);
+        }
+
+        $logs = ParkingLog::with(['user', 'parkingSlot', 'vehicle'])->latest()->limit(20)->get();
+        foreach ($logs as $log) {
+            $notifications->push([
+                'type' => 'parking',
+                'title' => 'Parking Activity',
+                'message' => ($log->exit_time && $log->exit_time <= now())
+                    ? ($log->vehicle->license_plate ?? 'A vehicle') . " has exited Slot " . ($log->parkingSlot->slot_number ?? 'N/A') . "."
+                    : ($log->vehicle->license_plate ?? 'A vehicle') . " has parked in Slot " . ($log->parkingSlot->slot_number ?? 'N/A') . ".",
+                'time' => $log->created_at,
+                'icon' => 'fas fa-parking',
+                'bg' => 'rgba(245, 48, 3, 0.1)',
+                'color' => 'var(--primary-color)',
             ]);
         }
 
@@ -331,7 +340,7 @@ class DashboardController extends Controller
             'occupied'      => $occupied,
             'available'     => $available,
             'totalUsers'    => $totalUsers,
-            'totalEarnings' => '\u20b1' . number_format($totalEarnings, 2),
+            'totalEarnings' => '₱' . number_format($totalEarnings, 2),
         ]);
     }
 
@@ -352,4 +361,102 @@ class DashboardController extends Controller
 
         return response()->json(['slots' => $slots]);
     }
-}
+
+    public function liveStream(Request $request): StreamedResponse
+    {
+        $headers = [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'X-Accel-Buffering' => 'no',
+        ];
+
+        return response()->stream(function () {
+            $lastPayloadHash = null;
+            $lastPingAt = microtime(true);
+
+            while (!connection_aborted()) {
+                $now = now();
+
+                $totalSlots = ParkingSlot::count();
+
+                $activeSlotIds = ParkingLog::where('exit_time', '>', $now)
+                    ->pluck('parking_slot_id')
+                    ->unique()
+                    ->values();
+
+                $occupied = $activeSlotIds->count();
+                $available = max(0, $totalSlots - $occupied);
+
+                $totalUsers = User::where('role', '!=', 'admin')->count();
+
+                $totalEarnings = ParkingLog::whereNotNull('total_fee')
+                    ->where('total_fee', '>', 0)
+                    ->where('exit_time', '<=', $now)
+                    ->sum('total_fee');
+
+                $todayEarnings = ParkingLog::whereNotNull('total_fee')
+                    ->where('total_fee', '>', 0)
+                    ->where('exit_time', '<=', $now)
+                    ->whereDate('exit_time', \Carbon\Carbon::today())
+                    ->sum('total_fee');
+
+                $monthEarnings = ParkingLog::whereNotNull('total_fee')
+                    ->where('total_fee', '>', 0)
+                    ->where('exit_time', '<=', $now)
+                    ->whereMonth('exit_time', \Carbon\Carbon::now()->month)
+                    ->whereYear('exit_time', \Carbon\Carbon::now()->year)
+                    ->sum('total_fee');
+
+                $slots = ParkingSlot::query()
+                    ->select(['id', 'status'])
+                    ->get()
+                    ->map(function ($slot) use ($activeSlotIds) {
+                        $isActive = $activeSlotIds->contains($slot->id);
+                        $status = $isActive ? 'occupied' : ($slot->status === 'maintenance' ? 'maintenance' : 'available');
+
+                        return [
+                            'id' => $slot->id,
+                            'status' => $status,
+                        ];
+                    })
+                    ->values();
+
+                $payload = [
+                    'stats' => [
+                        'totalSlots' => $totalSlots,
+                        'occupied' => $occupied,
+                        'available' => $available,
+                        'totalUsers' => $totalUsers,
+                        'totalEarnings' => '₱' . number_format($totalEarnings, 2),
+                        'todayEarnings' => '₱' . number_format($todayEarnings, 2),
+                        'monthEarnings' => '₱' . number_format($monthEarnings, 2),
+                    ],
+                    'slots' => $slots,
+                    'serverTime' => $now->toIso8601String(),
+                ];
+
+                $payloadJson = json_encode($payload);
+                $payloadHash = md5($payloadJson ?: '');
+
+                if ($payloadJson && $payloadHash !== $lastPayloadHash) {
+                    echo "event: live\n";
+                    echo "data: {$payloadJson}\n\n";
+                    @ob_flush();
+                    @flush();
+                    $lastPayloadHash = $payloadHash;
+                }
+
+                if (microtime(true) - $lastPingAt >= 15) {
+                    echo "event: ping\n";
+                    echo "data: {}\n\n";
+                    @ob_flush();
+                    @flush();
+                    $lastPingAt = microtime(true);
+                }
+
+                usleep(1_000_000); 
+            }
+        }, 200, $headers);
+    }
+}

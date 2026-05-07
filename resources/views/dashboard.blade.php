@@ -29,6 +29,9 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --topbar-h: 72px;
+            --sidebar-w: 240px;
+            --sidebar-w-collapsed: 72px;
         }
 
         [data-theme="dark"] {
@@ -75,8 +78,8 @@
         }
 
         .sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.8);
+            width: var(--sidebar-w);
+            background: rgba(245, 245, 245, 0.92);
             backdrop-filter: blur(10px);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -89,15 +92,16 @@
         }
 
         [data-theme="dark"] .sidebar {
-            background: rgba(28, 28, 26, 0.8);
+            background: rgba(18, 18, 18, 0.92);
         }
 
         .sidebar.collapsed {
-            width: 80px;
+            width: var(--sidebar-w-collapsed);
         }
 
         .sidebar-header {
-            padding: 1.5rem;
+            height: var(--topbar-h);
+            padding: 0 1.5rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -180,19 +184,20 @@
 
         .main-content {
             flex: 1;
-            margin-left: 280px;
+            margin-left: var(--sidebar-w);
             transition: var(--transition);
         }
 
         .sidebar.collapsed + .main-content {
-            margin-left: 80px;
+            margin-left: var(--sidebar-w-collapsed);
         }
 
         .header {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
+            height: var(--topbar-h);
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -436,7 +441,7 @@
 
         .overview-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -1369,10 +1374,6 @@
                                     <div class="stat-dot occupied"></div>
                                     <span>Occupied</span>
                                 </div>
-                                <div class="stat-item">
-                                    <div class="stat-dot reserved"></div>
-                                    <span>Reserved</span>
-                                </div>
                             </div>
                         </div>
                         <div class="parking-grid" id="parkingGrid">
@@ -2112,12 +2113,12 @@
 
     <div class="modal" id="extendSessionModal">
         <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header" style="background: #1b1b18; border-bottom: 1px solid var(--border-color);">
-                <h3 class="modal-title" style="color: white; font-weight: 700;">
+            <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid var(--border-color);">
+                <h3 class="modal-title" style="color: #1b1b18; font-weight: 700;">
                     <i class="fas fa-plus-circle" style="color: #f53003; margin-right: 0.5rem;"></i>
                     Extend Parking Session
                 </h3>
-                <button class="modal-close" onclick="closeModal('extendSessionModal')" style="color: white; opacity: 0.6;">
+                <button class="modal-close" onclick="closeModal('extendSessionModal')" style="color: #1b1b18; opacity: 0.6;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -2347,8 +2348,7 @@
             const slots = document.querySelectorAll('.parking-slot');
             const stats = {
                 available: 0,
-                occupied: 0,
-                reserved: 0
+                occupied: 0
             };
 
             slots.forEach(slot => {
@@ -2361,7 +2361,6 @@
             const statElements = document.querySelectorAll('.stat-item span');
             if (statElements.length >= 1) statElements[0].textContent = `${stats.available} Available`;
             if (statElements.length >= 2) statElements[1].textContent = `${stats.occupied} Occupied`;
-            if (statElements.length >= 3) statElements[2].textContent = `${stats.reserved} Reserved`;
         }
 
         function loadHistoryData() {
@@ -3356,7 +3355,6 @@
                     isValid = false;
                     showNotification('Please fill in all card details', 'error');
                 }
-                // Determine card provider based on first digit
                 let cardProvider = 'Credit Card';
                 if (cardNumber.startsWith('4')) cardProvider = 'Visa';
                 else if (cardNumber.startsWith('5')) cardProvider = 'Mastercard';
@@ -3405,7 +3403,6 @@
                     showNotification('Payment method added successfully!', 'success');
                     closeModal('addPaymentModal');
                     
-                    // Add to state and UI
                     state.paymentMethods.unshift(data.payment_method);
                     addPaymentMethodToUI(data.payment_method);
                     updateSavedMethodsInBooking();

@@ -32,6 +32,9 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --topbar-h: 72px;
+            --sidebar-w: 240px;
+            --sidebar-w-collapsed: 72px;
         }
 
         [data-theme="dark"] {
@@ -64,8 +67,8 @@
         }
 
         .sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.8);
+            width: var(--sidebar-w);
+            background: rgba(245, 245, 245, 0.92);
             backdrop-filter: blur(10px);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -78,15 +81,16 @@
         }
 
         [data-theme="dark"] .sidebar {
-            background: rgba(28, 28, 26, 0.8);
+            background: rgba(18, 18, 18, 0.92);
         }
 
         .sidebar.collapsed {
-            width: 80px;
+            width: var(--sidebar-w-collapsed);
         }
 
         .sidebar-header {
-            padding: 1.5rem;
+            height: var(--topbar-h);
+            padding: 0 1.5rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -208,19 +212,20 @@
 
         .main-content {
             flex: 1;
-            margin-left: 280px;
+            margin-left: var(--sidebar-w);
             transition: var(--transition);
         }
 
         .sidebar.collapsed + .main-content {
-            margin-left: 80px;
+            margin-left: var(--sidebar-w-collapsed);
         }
 
         .header {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
+            height: var(--topbar-h);
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;

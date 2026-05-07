@@ -16,10 +16,19 @@
         
         <style>
             .glass-effect {
-                background: rgba(255, 255, 255, 0.7);
+                background: rgba(242, 242, 242, 0.98);
                 backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+                border: 2px solid rgba(245, 48, 3, 0.45);
+                box-shadow:
+                    0 18px 55px rgba(17, 17, 16, 0.16),
+                    0 0 0 6px rgba(245, 48, 3, 0.12);
+            }
+            .dark .glass-effect {
+                background: rgba(16, 16, 16, 0.94);
+                border-color: rgba(245, 48, 3, 0.38);
+                box-shadow:
+                    0 18px 55px rgba(0, 0, 0, 0.7),
+                    0 0 0 6px rgba(245, 48, 3, 0.14);
             }
             .auth-bg {
                 background: radial-gradient(circle at top right, #fff5f2, transparent),
@@ -37,8 +46,9 @@
         
         <header class="w-full p-6 lg:px-20 flex justify-between items-center bg-white/50 dark:bg-black/50 backdrop-blur-sm sticky top-0 z-50">
             <div class="text-2xl font-bold tracking-tighter">
-                <a href="/" class="hover:opacity-80 transition-opacity">
-                    <span class="text-[#f53003]">Park</span>Master
+                <a href="/" class="hover:opacity-80 transition-opacity flex items-center gap-3">
+                    <img src="{{ asset('images/parkmasterlogo.png') }}" alt="ParkMaster Logo" style="width: 34px; height: 34px; object-fit: cover; border-radius: 8px;">
+                    <span><span class="text-[#f53003]">Park</span>Master</span>
                 </a>
             </div>
 

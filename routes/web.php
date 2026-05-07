@@ -59,6 +59,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/live/stats', [\App\Http\Controllers\Admin\DashboardController::class, 'liveStats'])->name('live.stats');
     Route::get('/live/slots', [\App\Http\Controllers\Admin\DashboardController::class, 'liveSlots'])->name('live.slots');
+    Route::get('/live/stream', [\App\Http\Controllers\Admin\DashboardController::class, 'liveStream'])->name('live.stream');
 });
 
 require __DIR__.'/auth.php';

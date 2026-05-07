@@ -1,5 +1,13 @@
 @extends('layouts.modern-admin')
 
+@section('extra-css')
+<style>
+    @media (max-width: 768px) {
+        .overview-section { grid-template-columns: 1fr !important; }
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="overview-card" style="margin-bottom: 2rem;">
     <div class="overview-header">
@@ -13,7 +21,7 @@
     </div>
 </div>
 
-<section class="overview-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+<section class="overview-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
     <div class="overview-card" style="background: var(--light-surface); border-radius: 0.125rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
         <div class="overview-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
             <div>
@@ -110,6 +118,7 @@
 @section('extra-js')
 <script>
     const LIVE_STATS_URL = '{{ route("admin.live.stats") }}';
+    const LIVE_STREAM_URL = '{{ route("admin.live.stream") }}';
 
     function fetchLiveStats() {
         fetch(LIVE_STATS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -124,6 +133,35 @@
             .catch(() => {});
     }
 
-    setInterval(fetchLiveStats, 10000);
+    function applyLiveStats(stats) {
+        const el = id => document.getElementById(id);
+        if (el('stat-total-slots')) el('stat-total-slots').textContent = stats.totalSlots;
+        if (el('stat-occupied'))    el('stat-occupied').textContent    = stats.occupied;
+        if (el('stat-available'))   el('stat-available').textContent   = stats.available;
+        if (el('stat-earnings'))    el('stat-earnings').textContent    = stats.totalEarnings;
+    }
+
+    (function initLive() {
+        if (!window.EventSource) {
+            fetchLiveStats();
+            setInterval(fetchLiveStats, 10000);
+            return;
+        }
+
+        const es = new EventSource(LIVE_STREAM_URL);
+
+        es.addEventListener('live', (e) => {
+            try {
+                const payload = JSON.parse(e.data || '{}');
+                if (payload.stats) applyLiveStats(payload.stats);
+            } catch (_) {}
+        });
+
+        es.onerror = () => {
+            try { es.close(); } catch (_) {}
+            fetchLiveStats();
+            setInterval(fetchLiveStats, 10000);
+        };
+    })();
 </script>
 @endsection

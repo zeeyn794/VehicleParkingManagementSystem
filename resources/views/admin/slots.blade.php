@@ -184,6 +184,7 @@
     document.querySelector('.btn-primary').onclick = openModal;
 
     const LIVE_SLOTS_URL = '{{ route("admin.live.slots") }}';
+    const LIVE_STREAM_URL = '{{ route("admin.live.stream") }}';
 
     const STATUS_STYLES = {
         available:   { bg: 'rgba(16, 185, 129, 0.1)', color: 'var(--success-color)' },
@@ -191,22 +192,47 @@
         maintenance: { bg: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning-color)' },
     };
 
+    function applySlotStatuses(slots) {
+        (slots || []).forEach(slot => {
+            const badge = document.getElementById('slot-badge-' + slot.id);
+            if (!badge) return;
+            const style = STATUS_STYLES[slot.status] || STATUS_STYLES.available;
+            badge.style.background = style.bg;
+            badge.style.color = style.color;
+            badge.lastChild.textContent = ' ' + slot.status.charAt(0).toUpperCase() + slot.status.slice(1);
+        });
+    }
+
     function fetchLiveSlots() {
         fetch(LIVE_SLOTS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.json())
             .then(data => {
-                data.slots.forEach(slot => {
-                    const badge = document.getElementById('slot-badge-' + slot.id);
-                    if (!badge) return;
-                    const style = STATUS_STYLES[slot.status] || STATUS_STYLES.available;
-                    badge.style.background = style.bg;
-                    badge.style.color = style.color;
-                    badge.lastChild.textContent = ' ' + slot.status.charAt(0).toUpperCase() + slot.status.slice(1);
-                });
+                applySlotStatuses(data.slots);
             })
             .catch(() => {});
     }
 
-    setInterval(fetchLiveSlots, 10000);
+    (function initLive() {
+        if (!window.EventSource) {
+            fetchLiveSlots();
+            setInterval(fetchLiveSlots, 10000);
+            return;
+        }
+
+        const es = new EventSource(LIVE_STREAM_URL);
+
+        es.addEventListener('live', (e) => {
+            try {
+                const payload = JSON.parse(e.data || '{}');
+                if (payload.slots) applySlotStatuses(payload.slots);
+            } catch (_) {}
+        });
+
+        es.onerror = () => {
+            try { es.close(); } catch (_) {}
+            fetchLiveSlots();
+            setInterval(fetchLiveSlots, 10000);
+        };
+    })();
 </script>
 @endsection
