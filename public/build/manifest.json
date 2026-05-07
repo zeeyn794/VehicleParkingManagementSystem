@@ -1,11 +1,29 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CHnX1CNQ.css",
+    "file": "assets/app-BoVs8eGq.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
     "names": [
       "app.css"
+    ]
+  },
+  "resources/css/login.css": {
+    "file": "assets/login-BDrwusC0.css",
+    "src": "resources/css/login.css",
+    "isEntry": true,
+    "name": "login",
+    "names": [
+      "login.css"
+    ]
+  },
+  "resources/css/register.css": {
+    "file": "assets/register-BhGBEFTe.css",
+    "src": "resources/css/register.css",
+    "isEntry": true,
+    "name": "register",
+    "names": [
+      "register.css"
     ]
   },
   "resources/js/app.js": {
