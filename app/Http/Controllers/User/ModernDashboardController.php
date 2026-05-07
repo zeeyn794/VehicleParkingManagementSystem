@@ -433,7 +433,6 @@ class ModernDashboardController extends Controller
         $user = auth()->user();
         $paymentData = json_decode($request->payment_data, true);
 
-        // Reset other primary methods if this one is primary
         if ($request->boolean('is_primary', false)) {
             \App\Models\PaymentMethod::where('user_id', $user->id)->update(['is_primary' => false]);
         }

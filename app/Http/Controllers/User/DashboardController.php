@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\User; // Keeping your new folder structure
-
+namespace App\Http\Controllers\User; 
 use App\Http\Controllers\Controller;
 use App\Models\ParkingSlot;
-use App\Models\ParkingSession; // Used in your version
-use App\Models\ParkingLog;     // Used in groupmate's version
-use App\Models\Vehicle;        // Used in groupmate's version
+use App\Models\ParkingSession; 
+use App\Models\ParkingLog;     
+use App\Models\Vehicle;        
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,19 +15,15 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Get active parking sessions for this user
         $activeSessions = $user ? ParkingLog::whereIn('vehicle_id', $user->vehicles->pluck('id'))
             ->where('exit_time', '>', now())
             ->with('parkingSlot')
             ->get() : collect();
 
-        // Get user's vehicles
         $userVehicles = $user ? $user->vehicles()->latest()->get() : collect();
 
-        // Get available parking slots
         $availableSlots = ParkingSlot::where('status', 'available')->get();
 
-        // Return the main dashboard view
         return view('dashboard', compact(
             'activeSessions',
             'userVehicles',
@@ -36,7 +31,6 @@ class DashboardController extends Controller
         ));
     }
 
-    // --- Keep the Park function from your groupmate ---
     public function park(Request $request)
     {
         $request->validate([
